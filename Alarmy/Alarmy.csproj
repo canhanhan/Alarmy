@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlarmRepository.cs" />
     <Compile Include="Common\AlarmStatusChangedEventArgs.cs" />
     <Compile Include="Common\Alarm.cs" />
     <Compile Include="AlarmService.cs" />
@@ -60,11 +61,11 @@
     <Compile Include="Common\InvalidStateException.cs" />
     <Compile Include="Common\IDateTimeProvider.cs" />
     <Compile Include="Common\TimeAlarm.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Common\IAlarmService.cs" />
     <Compile Include="Program.cs" />
