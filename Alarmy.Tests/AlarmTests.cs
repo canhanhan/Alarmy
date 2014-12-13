@@ -14,7 +14,7 @@ namespace Alarmy.Tests
                 get { return true; }
             }
             
-            internal override void Check()
+            public override void Check()
             {
 
             }

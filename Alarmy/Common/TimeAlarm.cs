@@ -28,7 +28,7 @@ namespace Alarmy.Common
             this.Set(newTime);
         }
 
-        internal override void Check()
+        public override void Check()
         {
             if (this.Status != AlarmStatus.Set && this.Status != AlarmStatus.Ringing)
                 return;

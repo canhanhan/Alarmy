@@ -9,7 +9,7 @@ namespace Alarmy
     internal class AlarmService : IAlarmService, IDisposable
     {
         private static readonly AlarmStatus[] ALARM_STATUSES_TO_CHECK = new[] { AlarmStatus.Ringing, AlarmStatus.Set };
-        private readonly Timer _Timer;
+        private readonly ITimerService _Timer;
         private readonly IAlarmRepository _Repository;
 
         public event EventHandler<AlarmStatusChangedEventArgs> AlarmStatusChanged;
@@ -26,13 +26,12 @@ namespace Alarmy
             }
         }
 
-        public AlarmService(IAlarmRepository repository)
+        public AlarmService(IAlarmRepository repository, ITimerService timer)
         {
             this._Repository = repository;
+            this._Timer = timer;
+            this._Timer.Elapsed +=_Timer_Elapsed;
             this.Interval = TimeSpan.FromSeconds(30).Milliseconds;
-            this._Timer = new Timer(this.Interval);
-            this._Timer.AutoReset = true;
-            this._Timer.Elapsed += _Timer_Elapsed;
         }
 
         public void Start()
@@ -50,7 +49,7 @@ namespace Alarmy
                 _Timer.Dispose();
         }
 
-        private void _Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private void _Timer_Elapsed(object sender, EventArgs e)
         {
             var alarms = this._Repository.List().Where(ShouldCheck).ToList();
             var statusCache = alarms.Select(x => x.Status).ToArray();

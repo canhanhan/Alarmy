@@ -27,7 +27,7 @@ namespace Alarmy.Common
             this.Status = AlarmStatus.Completed;
         }
 
-        internal abstract void Check();
+        public abstract void Check();
 
         protected void SetStatus(AlarmStatus status)
         {

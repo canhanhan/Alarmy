@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Alarmy.Common
 {
-    interface IAlarmRepository
+    public interface IAlarmRepository
     {
         IEnumerable<Alarm> List();
         void Add(Alarm alarm);
