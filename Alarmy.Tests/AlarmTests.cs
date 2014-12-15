@@ -9,7 +9,15 @@ namespace Alarmy.Tests
         public const string ARBITRARY_TEST_REASON = "TEST";
         private class TestAlarm : Alarm
         {
-            public TestAlarm() : base(null) {}
+            public override bool IsDelayable
+            {
+                get { return true; }
+            }
+            
+            public override void Check()
+            {
+
+            }
 
             public new void SetStatus(AlarmStatus status)
             {
@@ -40,7 +48,7 @@ namespace Alarmy.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidStateException))]
+        [ExpectedException(typeof(SetInvalidStateException))]
         public void Alarm_WhenSet_CannotBeCompleted()
         {
             var alarm = new TestAlarm();
@@ -82,13 +90,13 @@ namespace Alarmy.Tests
         }
 
         [TestMethod]
-        public void Alarm_WhenRinging_CanBeCancelled()
+        [ExpectedException(typeof(RingingInvalidStateException))]
+        public void Alarm_WhenRinging_CannotBeCancelled()
         {
             var alarm = new TestAlarm();
             alarm.SetStatus(AlarmStatus.Ringing);
 
             alarm.SetStatus(AlarmStatus.Cancelled);
-            Assert.AreEqual(AlarmStatus.Cancelled, alarm.Status);
         }
 
         [TestMethod]
@@ -104,7 +112,7 @@ namespace Alarmy.Tests
 
         #region Cancelled state tests
         [TestMethod]
-        [ExpectedException(typeof(InvalidStateException))]
+        [ExpectedException(typeof(CancelledInvalidStateException))]
         public void Alarm_WhenCancelled_CannotBeCompleted()
         {
             var alarm = new TestAlarm();
@@ -114,7 +122,7 @@ namespace Alarmy.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidStateException))]
+        [ExpectedException(typeof(CancelledInvalidStateException))]
         public void Alarm_WhenCancelled_CannotBeRinging()
         {
             var alarm = new TestAlarm();
@@ -124,18 +132,17 @@ namespace Alarmy.Tests
         }
 
         [TestMethod]
-        public void Alarm_WhenCancelled_CanBeSet()
+        [ExpectedException(typeof(CancelledInvalidStateException))]
+        public void Alarm_WhenCancelled_CannotBeSet()
         {
             var alarm = new TestAlarm();
             alarm.SetStatus(AlarmStatus.Cancelled);
 
             alarm.SetStatus(AlarmStatus.Set);
-
-            Assert.AreEqual(AlarmStatus.Set, alarm.Status);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidStateException))]
+        [ExpectedException(typeof(CancelledInvalidStateException))]
         public void Alarm_WhenCancelled_CannotBeMissed()
         {
             var alarm = new TestAlarm();
@@ -147,19 +154,18 @@ namespace Alarmy.Tests
 
         #region Completed state tests
         [TestMethod]
-        public void Alarm_WhenCompleted_CanBeSet()
+        [ExpectedException(typeof(CompletedInvalidStateException))]
+        public void Alarm_WhenCompleted_CannotBeSet()
         {
             var alarm = new TestAlarm();
             alarm.SetStatus(AlarmStatus.Ringing);
             alarm.SetStatus(AlarmStatus.Completed);
 
             alarm.SetStatus(AlarmStatus.Set);
-
-            Assert.AreEqual(AlarmStatus.Set, alarm.Status);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidStateException))]
+        [ExpectedException(typeof(CompletedInvalidStateException))]
         public void Alarm_WhenCompleted_CannotBeRinging()
         {
             var alarm = new TestAlarm();
@@ -170,7 +176,7 @@ namespace Alarmy.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidStateException))]
+        [ExpectedException(typeof(CompletedInvalidStateException))]
         public void Alarm_WhenCompleted_CannotBeCancelled()
         {
             var alarm = new TestAlarm();
@@ -181,7 +187,7 @@ namespace Alarmy.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidStateException))]
+        [ExpectedException(typeof(CompletedInvalidStateException))]
         public void Alarm_WhenCompleted_CannotBeMissed()
         {
             var alarm = new TestAlarm();
@@ -216,18 +222,18 @@ namespace Alarmy.Tests
         }
 
         [TestMethod]
-        public void Alarm_WhenMissed_CanBeSet()
+        [ExpectedException(typeof(MissedInvalidStateException))]
+        public void Alarm_WhenMissed_CannotBeSet()
         {
             var alarm = new TestAlarm();
             alarm.SetStatus(AlarmStatus.Ringing);
             alarm.SetStatus(AlarmStatus.Missed);
 
             alarm.SetStatus(AlarmStatus.Set);
-            Assert.AreEqual(AlarmStatus.Set, alarm.Status);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidStateException))]
+        [ExpectedException(typeof(MissedInvalidStateException))]
         public void Alarm_WhenMissed_CannotBeRinging()
         {
             var alarm = new TestAlarm();
