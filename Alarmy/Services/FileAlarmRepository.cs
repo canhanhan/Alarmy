@@ -74,11 +74,6 @@ namespace Alarmy
             }
         }
 
-        public void Flush()
-        {
-            this.Write();
-        }
-
         private void Write(List<IAlarm> list)
         {
             var serializer = JsonSerializer.Create(this.settings);

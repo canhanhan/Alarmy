@@ -9,6 +9,5 @@ namespace Alarmy.Common
         IEnumerable<IAlarm> List();
         void Add(IAlarm alarm);
         void Remove(IAlarm alarm);
-        void Flush();
     }
 }
