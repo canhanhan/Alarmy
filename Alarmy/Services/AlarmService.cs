@@ -1,5 +1,6 @@
 using Alarmy.Common;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Alarmy
@@ -29,7 +30,7 @@ namespace Alarmy
             this._Repository = repository;
             this._Timer = timer;
             this._Timer.Elapsed +=_Timer_Elapsed;
-            this.Interval = TimeSpan.FromSeconds(30).Milliseconds;
+            this.Interval = TimeSpan.FromSeconds(30).TotalMilliseconds;
         }
 
         public void Start()
@@ -39,6 +40,21 @@ namespace Alarmy
         public void Stop()
         {
             this._Timer.Stop();
+        }
+
+        public void Add(IAlarm alarm)
+        {
+            this._Repository.Add(alarm);
+        }
+
+        public void Remove(IAlarm alarm)
+        {
+            this._Repository.Remove(alarm);
+        }
+
+        public IEnumerable<IAlarm> List()
+        {
+            return this._Repository.List();
         }
 
         public void Dispose()
@@ -65,7 +81,7 @@ namespace Alarmy
             }
         }
 
-        private static bool ShouldCheck(Alarm alarm)
+        private static bool ShouldCheck(IAlarm alarm)
         {
             return ALARM_STATUSES_TO_CHECK.Any(status => status == alarm.Status);
         }

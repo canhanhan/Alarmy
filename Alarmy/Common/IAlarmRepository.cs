@@ -6,8 +6,9 @@ namespace Alarmy.Common
 {
     public interface IAlarmRepository
     {
-        IEnumerable<Alarm> List();
-        void Add(Alarm alarm);
-        void Remove(Alarm alarm);
+        IEnumerable<IAlarm> List();
+        void Add(IAlarm alarm);
+        void Remove(IAlarm alarm);
+        void Flush();
     }
 }

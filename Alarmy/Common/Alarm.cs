@@ -5,16 +5,38 @@ using System.Text;
 
 namespace Alarmy.Common
 {
-    public abstract class Alarm
+    public class Alarm : IAlarm
     {
+        public const int SNOOZE_INTERVAL = 5;
+        private readonly IDateTimeProvider _DateTimeProvider;
+
         public string Title { get; set; }
+
+        public AlarmStatus Status { get; set; }
+        
+        public string CancelReason { get; set; }
+
+        public DateTime Time { get; set; }
+
+        public Alarm() { }
+
+        public Alarm(IDateTimeProvider dateTimeProvider)
+        {
+            this._DateTimeProvider = dateTimeProvider;                
+        }
+
+        public void Set(DateTime time)
+        {
+            this.Time = time;
+            this.SetStatus(AlarmStatus.Set);
+        }
+
 #if DEBUG
-        public AlarmStatus Status { get; internal set; }
-#else
-        public AlarmStatus Status { get; private set; }
+        public void SetStatusTest(AlarmStatus status)
+        {
+            this.Status = status;
+        }
 #endif
-        public string CancelReason { get; private set; }
-        public abstract bool IsDelayable { get; }
 
         public virtual void Cancel(string reason)
         {
@@ -27,30 +49,88 @@ namespace Alarmy.Common
             this.Status = AlarmStatus.Completed;
         }
 
-        public abstract void Check();
+        public bool CanBeCancelled
+        {
+            get
+            {
+                return this.Status == AlarmStatus.Set || this.Status == AlarmStatus.Missed || this.Status == AlarmStatus.Ringing;
+            }
+        }
+
+        public bool CanBeCompleted
+        {
+            get
+            {
+                return this.Status == AlarmStatus.Ringing || this.Status == AlarmStatus.Missed;
+            }
+        }
+
+        public bool CanBeRinging
+        {
+            get
+            {
+                return this.Status == AlarmStatus.Set;
+            }
+        }
+
+        public bool CanBeSet
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public bool CanBeMissed
+        {
+            get
+            {
+                return this.Status == AlarmStatus.Ringing || this.Status == AlarmStatus.Set;
+            }
+        }
+
+        public void Check()
+        {
+            if (this.Status != AlarmStatus.Set && this.Status != AlarmStatus.Ringing)
+                return;
+
+            var time = (this._DateTimeProvider == null ? DateTime.Now : this._DateTimeProvider.Now).RoundToMinute();
+            if (this.Status != AlarmStatus.Ringing && this.Time >= time && this.Time < time.AddMinutes(1))
+            {
+                this.SetStatus(AlarmStatus.Ringing);
+            }
+            else if (this.Time < time)
+            {
+                this.SetStatus(AlarmStatus.Missed);
+            }
+        }
 
         protected void SetStatus(AlarmStatus status)
         {
             if (status == this.Status)
                 return;
 
-            switch (this.Status)
+            switch (status)
             {
                 case AlarmStatus.Cancelled:
-                    throw new CancelledInvalidStateException();
+                    if (!this.CanBeCancelled)
+                        throw new InvalidStateException();
+                    break;
                 case AlarmStatus.Completed:
-                    throw new CompletedInvalidStateException();
+                    if (!this.CanBeCompleted)
+                        throw new InvalidStateException();
+                    break;
                 case AlarmStatus.Ringing:
-                    if (status != AlarmStatus.Missed && status != AlarmStatus.Completed && status != AlarmStatus.Set)
-                        throw new RingingInvalidStateException();
+                    if (!this.CanBeRinging)
+                        throw new InvalidStateException();
                     break;
                 case AlarmStatus.Set:
-                    if (status != AlarmStatus.Cancelled && status != AlarmStatus.Ringing && status != AlarmStatus.Missed)
-                        throw new SetInvalidStateException();
+                    if (!this.CanBeSet)
+                        throw new InvalidStateException();
                     break;
                 case AlarmStatus.Missed:
-                    if (status != AlarmStatus.Completed && status != AlarmStatus.Cancelled)
-                        throw new MissedInvalidStateException();
+                    if (!this.CanBeMissed)
+                        throw new InvalidStateException();
                     break;
                 default:
                     throw new InvalidProgramException("Unknown state: " + this.Status);
