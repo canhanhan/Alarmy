@@ -4,6 +4,7 @@ using System.Windows.Forms;
 
 namespace Alarmy.Views
 {
+    // Modified version of: http://www.codeproject.com/Articles/6741/AppBar-using-C
     internal class AppBar : Form
     {
         private enum ABEdge : int
