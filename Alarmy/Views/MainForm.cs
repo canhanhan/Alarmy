@@ -14,7 +14,6 @@ namespace Alarmy.Views
         private Point clickedPosition;
         private bool WasRegistered;
         
-
         public MainForm(IAlarmService alarmService)
         {
             this.alarmService = alarmService;
@@ -32,6 +31,11 @@ namespace Alarmy.Views
 
             RefreshList();
 
+            base.RegisterBar();
+        }
+
+        private void AlarmsForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
             base.RegisterBar();
         }
 
@@ -66,7 +70,7 @@ namespace Alarmy.Views
             alarms.OfType<Alarm>()
                                     .Where(x => x.IsWorthShowing)
                                     .OrderBy(x => x.Time)
-                                    .GroupBy(x => RoundUp(x.Time, TimeSpan.FromMinutes(15)))
+                                    .GroupBy(x => x.Time.RoundUp(TimeSpan.FromMinutes(15)))
                                     .ToList().ForEach(x =>
                                     {
                                         var group = new ListViewGroup(x.Key.ToString(), String.Format("{0}-{1}", x.Key.AddMinutes(-15).ToShortTimeString(), x.Key.ToShortTimeString()));
@@ -78,33 +82,7 @@ namespace Alarmy.Views
             listView1.EndUpdate();            
         }
 
-        private static Color GetColor(Alarm alarm)
-        {
-            switch (alarm.Status)
-            {
-                case AlarmStatus.Completed:
-                    return Color.Green;
-                case AlarmStatus.Cancelled:
-                    return Color.Gray;
-                case AlarmStatus.Ringing:
-                    return Color.Yellow;
-                case AlarmStatus.Missed:
-                    return Color.Red;
-                default:
-                    return Color.White;
-            }
-        }
-
-        private static DateTime RoundUp(DateTime dt, TimeSpan d)
-        {
-            return new DateTime(((dt.Ticks + d.Ticks - 1) / d.Ticks) * d.Ticks);
-        }
-
-        private void AlarmsForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            base.RegisterBar();
-        }
-
+        #region Window Move
         private void label1_MouseMove(object sender, MouseEventArgs e)
         {
             if (this.clickedPosition != Point.Empty && e.Button.HasFlag(MouseButtons.Left))
@@ -126,11 +104,7 @@ namespace Alarmy.Views
         {
             this.clickedPosition = Point.Empty;
         }
-
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
+        #endregion
 
         private void listView1_MouseDown(object sender, MouseEventArgs e)
         {
@@ -152,6 +126,11 @@ namespace Alarmy.Views
 
                 itemContext.Show(Cursor.Position);
             }
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
         }
 
         private void completeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -264,6 +243,23 @@ namespace Alarmy.Views
         private void timer1_Tick(object sender, EventArgs e)
         {
             this.RefreshList();
+        }
+
+        private static Color GetColor(Alarm alarm)
+        {
+            switch (alarm.Status)
+            {
+                case AlarmStatus.Completed:
+                    return Color.Green;
+                case AlarmStatus.Cancelled:
+                    return Color.Gray;
+                case AlarmStatus.Ringing:
+                    return Color.Yellow;
+                case AlarmStatus.Missed:
+                    return Color.Red;
+                default:
+                    return Color.White;
+            }
         }
     }
 }

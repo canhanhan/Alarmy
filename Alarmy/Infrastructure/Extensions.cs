@@ -11,6 +11,11 @@ namespace Alarmy
             return new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute, 0);
         }
 
+        public static DateTime RoundUp(this DateTime dt, TimeSpan d)
+        {
+            return new DateTime(((dt.Ticks + d.Ticks - 1) / d.Ticks) * d.Ticks);
+        }    
+
         public static void DoubleBuffered(this Control control, bool enable)
         {
             var doubleBufferPropertyInfo = control.GetType().GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
