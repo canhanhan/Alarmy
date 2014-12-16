@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
 
-namespace Alarmy
+namespace Alarmy.Services
 {
     public class FileAlarmRepository : IAlarmRepository
     {

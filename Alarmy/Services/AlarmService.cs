@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Alarmy
+namespace Alarmy.Services
 {
     internal class AlarmService : IAlarmService, IDisposable
     {

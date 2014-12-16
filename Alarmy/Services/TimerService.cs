@@ -2,7 +2,7 @@
 using System;
 using System.Timers;
 
-namespace Alarmy
+namespace Alarmy.Services
 {
     public class TimerService : ITimerService
     {

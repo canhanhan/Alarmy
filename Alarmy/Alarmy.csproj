@@ -54,6 +54,12 @@
     <AssemblyOriginatorKeyFile>Default.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Castle.Core">
+      <HintPath>..\packages\Castle.Core.3.3.0\lib\net40-client\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Castle.Windsor">
+      <HintPath>..\packages\Castle.Windsor.3.3.0\lib\net40\Castle.Windsor.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -71,8 +77,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\IAlarm.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="NativeMethods.cs" />
+    <Compile Include="Infrastructure\WindsorInstaller.cs" />
+    <Compile Include="Infrastructure\Extensions.cs" />
+    <Compile Include="Infrastructure\NativeMethods.cs" />
     <Compile Include="Services\InMemoryAlarmRepository.cs" />
     <Compile Include="Services\FileAlarmRepository.cs" />
     <Compile Include="Views\CancelForm.cs">
@@ -93,7 +100,6 @@
     <Compile Include="Common\AlarmStatus.cs" />
     <Compile Include="Common\IAlarmRepository.cs" />
     <Compile Include="Common\ITimerService.cs" />
-    <Compile Include="Services\DateTimeProvider.cs" />
     <Compile Include="Common\InvalidStateException.cs" />
     <Compile Include="Common\IDateTimeProvider.cs" />
     <Compile Include="Views\AppBar.cs">
@@ -161,9 +167,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

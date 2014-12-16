@@ -1,4 +1,6 @@
 ﻿using Alarmy.Views;
+using Castle.Windsor;
+using Castle.Windsor.Installer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,9 +24,11 @@ namespace Alarmy
             if (mutex.WaitOne(TimeSpan.Zero, true))
             {
 #endif
+                var container = new WindsorContainer();
+                container.Install(FromAssembly.This());
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                Application.Run(new MainForm());
+                Application.Run(container.Resolve<MainForm>());            
 #if !DEBUG
                 mutex.ReleaseMutex();
             }
