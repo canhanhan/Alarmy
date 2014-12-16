@@ -52,6 +52,11 @@ namespace Alarmy
             this._Repository.Remove(alarm);
         }
 
+        public void Update(IAlarm alarm)
+        {
+            this._Repository.Update(alarm);
+        }
+
         public IEnumerable<IAlarm> List()
         {
             return this._Repository.List();

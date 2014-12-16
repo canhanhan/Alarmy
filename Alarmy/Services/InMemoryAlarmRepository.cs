@@ -1,34 +1,36 @@
 ﻿using Alarmy.Common;
-using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
 
 namespace Alarmy
 {
     public class InMemoryAlarmRepository : IAlarmRepository
     {
-        private readonly List<IAlarm> alarms;
+        private readonly Dictionary<Guid, IAlarm> alarms;
 
         public InMemoryAlarmRepository()
         {
-            this.alarms = new List<IAlarm>();
+            this.alarms = new Dictionary<Guid, IAlarm>();
         }
 
         public IEnumerable<IAlarm> List()
         {
-            return this.alarms.AsReadOnly();
+            return this.alarms.Values;
         }
 
         public void Add(IAlarm alarm)
         {
-            this.alarms.Add(alarm);
+            this.alarms[alarm.Id] = alarm;
         }
 
         public void Remove(IAlarm alarm)
         {
-            this.alarms.Remove(alarm);
+            this.alarms.Remove(alarm.Id);
+        }
+
+        public void Update(IAlarm alarm)
+        {
+            this.Add(alarm);
         }
     }
 }
