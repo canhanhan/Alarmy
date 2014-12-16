@@ -64,7 +64,6 @@
   <ItemGroup>
     <Compile Include="AlarmTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TimeAlarmTests.cs" />
     <Compile Include="AlarmServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>

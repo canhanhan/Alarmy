@@ -1,14 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Alarmy.Common
 {
     public class Alarm : IAlarm
     {
-        public const int SNOOZE_INTERVAL = 5;
+        private Guid _Id = Guid.NewGuid();
+        //public const int SNOOZE_INTERVAL = 5;
+        public const int ISWORTHSHOWING_FRESNESS = 1;
         private readonly IDateTimeProvider _DateTimeProvider;
+
+        public Guid Id
+        {
+            get
+            {
+                return _Id;
+            }
+            set
+            {
+                _Id = value;
+            }
+        }
 
         public string Title { get; set; }
 
@@ -17,6 +28,14 @@ namespace Alarmy.Common
         public string CancelReason { get; set; }
 
         public DateTime Time { get; set; }
+
+        public bool IsWorthShowing
+        {
+            get
+            {
+                return !((this.Status == AlarmStatus.Cancelled || this.Status == AlarmStatus.Completed) && this.Time < this.GetTime().AddMinutes(-ISWORTHSHOWING_FRESNESS));
+            }
+        }
 
         public Alarm() { }
 
@@ -94,7 +113,7 @@ namespace Alarmy.Common
             if (this.Status != AlarmStatus.Set && this.Status != AlarmStatus.Ringing)
                 return;
 
-            var time = (this._DateTimeProvider == null ? DateTime.Now : this._DateTimeProvider.Now).RoundToMinute();
+            var time = GetTime();
             if (this.Status != AlarmStatus.Ringing && this.Time >= time && this.Time < time.AddMinutes(1))
             {
                 this.SetStatus(AlarmStatus.Ringing);
@@ -105,7 +124,7 @@ namespace Alarmy.Common
             }
         }
 
-        protected void SetStatus(AlarmStatus status)
+        internal void SetStatus(AlarmStatus status)
         {
             if (status == this.Status)
                 return;
@@ -137,6 +156,11 @@ namespace Alarmy.Common
             }
 
             this.Status = status;
+        }
+
+        private DateTime GetTime()
+        {
+            return (this._DateTimeProvider == null ? DateTime.Now : this._DateTimeProvider.Now).RoundToMinute();
         }
     }
 }

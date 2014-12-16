@@ -7,10 +7,12 @@ namespace Alarmy.Common
 {
     public interface IAlarm
     {
+        Guid Id { get; set; }
         string Title { get; set; }
         AlarmStatus Status { get; }
         string CancelReason { get; set; }
         DateTime Time { get; set; }
+        bool IsWorthShowing { get; }
         void Set(DateTime time);
         void Cancel(string reason);
         void Complete();
