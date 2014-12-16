@@ -122,6 +122,7 @@ namespace Alarmy.Services
                 }
                 catch (IOException ex)
                 {
+                    //If not file sharing exception then rethrow
                     if (Marshal.GetHRForException(ex) != -2147024864)
                     {
                         throw;
