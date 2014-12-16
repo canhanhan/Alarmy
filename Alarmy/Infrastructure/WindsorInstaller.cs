@@ -7,11 +7,10 @@ using Castle.Windsor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Alarmy.Infrastructure
 {
-    public class WindsorInstaller : IWindsorInstaller 
+    public class WindsorInstaller : IWindsorInstaller
     {
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
@@ -19,7 +18,7 @@ namespace Alarmy.Infrastructure
                 .For<IAlarmRepository>()
                 .ImplementedBy<FileAlarmRepository>()
                 .LifestyleSingleton()
-                .DependsOn(Property.ForKey("path").Eq(Environment.GetCommandLineArgs()[1]))    
+                .DependsOn(Property.ForKey("path").Eq(Environment.GetCommandLineArgs()[1]))
             );
 
             container.Register(Component

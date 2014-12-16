@@ -14,6 +14,6 @@ namespace Alarmy.Common
         void Add(IAlarm alarm);
         void Remove(IAlarm alarm);
         void Update(IAlarm item);
-        IEnumerable<IAlarm> List();       
+        IEnumerable<IAlarm> List();
     }
 }

@@ -1,4 +1,4 @@
-using Alarmy.Common;
+﻿using Alarmy.Common;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -23,12 +23,16 @@ namespace Alarmy.Services
         public FileAlarmRepository(string path)
         {
             this.path = path;
-            this.settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
-            this.serializer = JsonSerializer.Create(this.settings);
+            settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
+            serializer = JsonSerializer.Create(settings);
 
             if (!File.Exists(path))
+            {
                 using (File.Create(path))
+                {
                     Console.WriteLine("Creating the file " + path);
+                }
+            }
         }
 
         public IEnumerable<IAlarm> List()
@@ -48,14 +52,14 @@ namespace Alarmy.Services
 
         public void Update(IAlarm alarm)
         {
-            this.Add(alarm);
+            Add(alarm);
         }
 
         private Dictionary<Guid, IAlarm> GetAlarms()
         {
-            lock (this.path)
+            lock (path)
             {
-                this.WaitAndOpenFile(this.path, FileMode.Open, FileAccess.Read, FileShare.Read, file =>
+                WaitAndOpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read, file =>
                 {
                     using (var md5 = MD5.Create())
                     {
@@ -64,10 +68,12 @@ namespace Alarmy.Services
                         {
                             file.Position = 0;
                             using (var streamReader = new StreamReader(file))
-                            using (var reader = new JsonTextReader(streamReader))
                             {
-                                alarmsCache = this.serializer.Deserialize<Dictionary<Guid, IAlarm>>(reader) ?? new Dictionary<Guid, IAlarm>();
-                                lastHash = hash;
+                                using (var reader = new JsonTextReader(streamReader))
+                                {
+                                    alarmsCache = serializer.Deserialize<Dictionary<Guid, IAlarm>>(reader) ?? new Dictionary<Guid, IAlarm>();
+                                    lastHash = hash;
+                                }
                             }
                         }
                     }
@@ -79,47 +85,48 @@ namespace Alarmy.Services
 
         private void Modify(Action<Dictionary<Guid, IAlarm>> operation)
         {
-            lock (this.path)
+            lock (path)
             {
                 GetAlarms();
                 operation.Invoke(alarmsCache);
                 Write();
             }
-
         }
 
         private void Write()
         {
-            this.WaitAndOpenFile(this.path, FileMode.Open, FileAccess.Write, FileShare.Read, file =>
+            WaitAndOpenFile(path, FileMode.Open, FileAccess.Write, FileShare.Read, file =>
             {
                 using (var streamWriter = new StreamWriter(file))
-                using (var writer = new JsonTextWriter(streamWriter))
                 {
-                    var alarmsToWrite = alarmsCache.Values.Where(x => x.IsWorthShowing).ToDictionary(x => x.Id);
-                    this.serializer.Serialize(writer, alarmsToWrite);
+                    using (var writer = new JsonTextWriter(streamWriter))
+                    {
+                        var alarmsToWrite = alarmsCache.Values.Where(x => x.IsWorthShowing).ToDictionary(x => x.Id);
+                        serializer.Serialize(writer, alarmsToWrite);
+                    }
                 }
             });
         }
-    
+
         private void WaitAndOpenFile(string path, FileMode mode, FileAccess access, FileShare share, Action<FileStream> operation)
         {
             while (true)
             {
                 try
                 {
-                    using (var file = File.Open(path, mode, access, share)) 
-                    {    
+                    using (var file = File.Open(path, mode, access, share))
+                    {
                         operation.Invoke(file);
-                        return;                            
+                        return;
                     }
                 }
                 catch (IOException ex)
                 {
                     if (Marshal.GetHRForException(ex) != -2147024864)
+                    {
                         throw;
-
-                    // Sleep randomly between 400ms to 500ms
-                    Thread.Sleep(400 + (random.Next(10)*10));
+                    }
+                    Thread.Sleep(400 + (random.Next(10) * 10));
                 }
             }
         }

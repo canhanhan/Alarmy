@@ -5,7 +5,7 @@ namespace Alarmy.Common
     public class Alarm : IAlarm
     {
         private Guid _Id = Guid.NewGuid();
-        //public const int SNOOZE_INTERVAL = 5;
+
         public const int ISWORTHSHOWING_FRESNESS = 1;
         private readonly IDateTimeProvider _DateTimeProvider;
 
@@ -24,7 +24,7 @@ namespace Alarmy.Common
         public string Title { get; set; }
 
         public AlarmStatus Status { get; set; }
-        
+
         public string CancelReason { get; set; }
 
         public DateTime Time { get; set; }
@@ -33,46 +33,48 @@ namespace Alarmy.Common
         {
             get
             {
-                return !((this.Status == AlarmStatus.Cancelled || this.Status == AlarmStatus.Completed) && this.Time < this.GetTime().AddMinutes(-ISWORTHSHOWING_FRESNESS));
+                return !((Status == AlarmStatus.Cancelled || Status == AlarmStatus.Completed) && Time < GetTime().AddMinutes(-ISWORTHSHOWING_FRESNESS));
             }
         }
 
-        public Alarm() { }
+        public Alarm()
+        {
+        }
 
         public Alarm(IDateTimeProvider dateTimeProvider)
         {
-            this._DateTimeProvider = dateTimeProvider;                
+            _DateTimeProvider = dateTimeProvider;
         }
 
         public void Set(DateTime time)
         {
-            this.Time = time;
-            this.SetStatus(AlarmStatus.Set);
+            Time = time;
+            SetStatus(AlarmStatus.Set);
         }
 
 #if DEBUG
         public void SetStatusTest(AlarmStatus status)
         {
-            this.Status = status;
+            Status = status;
         }
 #endif
 
         public virtual void Cancel(string reason)
         {
-            this.CancelReason = reason;
-            this.SetStatus(AlarmStatus.Cancelled);
+            CancelReason = reason;
+            SetStatus(AlarmStatus.Cancelled);
         }
 
         public virtual void Complete()
         {
-            this.Status = AlarmStatus.Completed;
+            Status = AlarmStatus.Completed;
         }
 
         public bool CanBeCancelled
         {
             get
             {
-                return this.Status == AlarmStatus.Set || this.Status == AlarmStatus.Missed || this.Status == AlarmStatus.Ringing;
+                return Status == AlarmStatus.Set || Status == AlarmStatus.Missed || Status == AlarmStatus.Ringing;
             }
         }
 
@@ -80,7 +82,7 @@ namespace Alarmy.Common
         {
             get
             {
-                return this.Status == AlarmStatus.Ringing || this.Status == AlarmStatus.Missed;
+                return Status == AlarmStatus.Ringing || Status == AlarmStatus.Missed;
             }
         }
 
@@ -88,7 +90,7 @@ namespace Alarmy.Common
         {
             get
             {
-                return this.Status == AlarmStatus.Set;
+                return Status == AlarmStatus.Set;
             }
         }
 
@@ -104,63 +106,78 @@ namespace Alarmy.Common
         {
             get
             {
-                return this.Status == AlarmStatus.Ringing || this.Status == AlarmStatus.Set;
+                return Status == AlarmStatus.Ringing || Status == AlarmStatus.Set;
             }
         }
 
         public void Check()
         {
-            if (this.Status != AlarmStatus.Set && this.Status != AlarmStatus.Ringing)
+            if (Status != AlarmStatus.Set && Status != AlarmStatus.Ringing)
+            {
                 return;
-
-            var time = GetTime();
-            if (this.Status != AlarmStatus.Ringing && this.Time >= time && this.Time < time.AddMinutes(1))
-            {
-                this.SetStatus(AlarmStatus.Ringing);
             }
-            else if (this.Time < time)
+            var time = GetTime();
+            if (Status != AlarmStatus.Ringing && Time >= time && Time < time.AddMinutes(1))
             {
-                this.SetStatus(AlarmStatus.Missed);
+                SetStatus(AlarmStatus.Ringing);
+            }
+            else
+            {
+                if (Time < time)
+                {
+                    SetStatus(AlarmStatus.Missed);
+                }
             }
         }
 
         internal void SetStatus(AlarmStatus status)
         {
-            if (status == this.Status)
+            if (status == Status)
+            {
                 return;
-
+            }
             switch (status)
             {
                 case AlarmStatus.Cancelled:
-                    if (!this.CanBeCancelled)
+                    if (!CanBeCancelled)
+                    {
                         throw new InvalidStateException();
+                    }
                     break;
                 case AlarmStatus.Completed:
-                    if (!this.CanBeCompleted)
+                    if (!CanBeCompleted)
+                    {
                         throw new InvalidStateException();
+                    }
                     break;
                 case AlarmStatus.Ringing:
-                    if (!this.CanBeRinging)
+                    if (!CanBeRinging)
+                    {
                         throw new InvalidStateException();
+                    }
                     break;
                 case AlarmStatus.Set:
-                    if (!this.CanBeSet)
+                    if (!CanBeSet)
+                    {
                         throw new InvalidStateException();
+                    }
                     break;
                 case AlarmStatus.Missed:
-                    if (!this.CanBeMissed)
+                    if (!CanBeMissed)
+                    {
                         throw new InvalidStateException();
+                    }
                     break;
                 default:
-                    throw new InvalidProgramException("Unknown state: " + this.Status);
+                    throw new InvalidProgramException("Unknown state: " + Status);
             }
 
-            this.Status = status;
+            Status = status;
         }
 
         private DateTime GetTime()
         {
-            return (this._DateTimeProvider == null ? DateTime.Now : this._DateTimeProvider.Now).RoundToMinute();
+            return (_DateTimeProvider == null ? DateTime.Now : _DateTimeProvider.Now).RoundToMinute();
         }
     }
 }

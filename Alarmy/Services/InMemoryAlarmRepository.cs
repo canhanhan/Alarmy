@@ -10,27 +10,27 @@ namespace Alarmy.Services
 
         public InMemoryAlarmRepository()
         {
-            this.alarms = new Dictionary<Guid, IAlarm>();
+            alarms = new Dictionary<Guid, IAlarm>();
         }
 
         public IEnumerable<IAlarm> List()
         {
-            return this.alarms.Values;
+            return alarms.Values;
         }
 
         public void Add(IAlarm alarm)
         {
-            this.alarms[alarm.Id] = alarm;
+            alarms[alarm.Id] = alarm;
         }
 
         public void Remove(IAlarm alarm)
         {
-            this.alarms.Remove(alarm.Id);
+            alarms.Remove(alarm.Id);
         }
 
         public void Update(IAlarm alarm)
         {
-            this.Add(alarm);
+            Add(alarm);
         }
     }
 }

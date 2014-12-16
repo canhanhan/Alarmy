@@ -2,5 +2,7 @@
 
 namespace Alarmy.Common
 {
-    public class InvalidStateException : ApplicationException { }
+    public class InvalidStateException : ApplicationException
+    {
+    }
 }

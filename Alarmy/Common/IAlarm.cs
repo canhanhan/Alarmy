@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Alarmy.Common
 {
@@ -20,8 +20,8 @@ namespace Alarmy.Common
         bool CanBeMissed { get; }
         void Check();
 
-        #if DEBUG
+#if DEBUG
         void SetStatusTest(AlarmStatus status);
-        #endif
+#endif
     }
 }

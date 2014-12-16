@@ -2,7 +2,7 @@
 
 namespace Alarmy.Common
 {
-    public interface IDateTimeProvider 
+    public interface IDateTimeProvider
     {
         DateTime Now { get; }
     }
