@@ -6,24 +6,12 @@ namespace Alarmy.Views
 {
     internal class AppBar : Form
     {
-        [StructLayout(LayoutKind.Sequential)]
-        private struct RECT
+        private enum ABEdge : int
         {
-            public int left;
-            public int top;
-            public int right;
-            public int bottom;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct APPBARDATA
-        {
-            public int cbSize;
-            public IntPtr hWnd;
-            public int uCallbackMessage;
-            public int uEdge;
-            public RECT rc;
-            public IntPtr lParam;
+            ABE_LEFT = 0,
+            ABE_TOP,
+            ABE_RIGHT,
+            ABE_BOTTOM
         }
 
         private enum ABMsg : int
@@ -49,25 +37,9 @@ namespace Alarmy.Views
             ABN_WINDOWARRANGE
         }
 
-        private enum ABEdge : int
-        {
-            ABE_LEFT = 0,
-            ABE_TOP,
-            ABE_RIGHT,
-            ABE_BOTTOM
-        }
-
         private bool fBarRegistered = false;
         private bool fBarIsRegistering = false;
 
-        [DllImport("SHELL32", CallingConvention = CallingConvention.StdCall)]
-        private static extern uint SHAppBarMessage(int dwMessage, ref APPBARDATA pData);
-        [DllImport("USER32")]
-        private static extern int GetSystemMetrics(int Index);
-        [DllImport("User32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
-        private static extern bool MoveWindow(IntPtr hWnd, int x, int y, int cx, int cy, bool repaint);
-        [DllImport("User32.dll", CharSet = CharSet.Auto)]
-        private static extern int RegisterWindowMessage(string msg);
         private int uCallBack;
         private bool fBarIsRepositioning;
 
@@ -94,22 +66,22 @@ namespace Alarmy.Views
             }
             fBarIsRegistering = true;
 
-            var abd = new APPBARDATA();
+            var abd = new NativeMethods.APPBARDATA();
             abd.cbSize = Marshal.SizeOf(abd);
             abd.hWnd = Handle;
             if (!fBarRegistered)
             {
-                uCallBack = RegisterWindowMessage("AppBarMessage");
+                uCallBack = NativeMethods.RegisterWindowMessage("AppBarMessage");
                 abd.uCallbackMessage = uCallBack;
 
-                SHAppBarMessage((int)ABMsg.ABM_NEW, ref abd);
+                NativeMethods.SHAppBarMessage((int)ABMsg.ABM_NEW, ref abd);
                 fBarRegistered = true;
 
                 ABSetPos();
             }
             else
             {
-                SHAppBarMessage((int)ABMsg.ABM_REMOVE, ref abd);
+                NativeMethods.SHAppBarMessage((int)ABMsg.ABM_REMOVE, ref abd);
                 fBarRegistered = false;
             }
 
@@ -124,7 +96,7 @@ namespace Alarmy.Views
             }
             fBarIsRepositioning = true;
 
-            var abd = new APPBARDATA();
+            var abd = new NativeMethods.APPBARDATA();
             abd.cbSize = Marshal.SizeOf(abd);
             abd.hWnd = Handle;
             abd.uEdge = (int)(Location.X < Screen.GetWorkingArea(this).Width / 2 ? ABEdge.ABE_LEFT : ABEdge.ABE_RIGHT);
@@ -161,7 +133,7 @@ namespace Alarmy.Views
             }
 
 
-            SHAppBarMessage((int)ABMsg.ABM_QUERYPOS, ref abd);
+            NativeMethods.SHAppBarMessage((int)ABMsg.ABM_QUERYPOS, ref abd);
 
 
 
@@ -182,11 +154,11 @@ namespace Alarmy.Views
             }
 
 
-            SHAppBarMessage((int)ABMsg.ABM_SETPOS, ref abd);
+            NativeMethods.SHAppBarMessage((int)ABMsg.ABM_SETPOS, ref abd);
 
 
 
-            MoveWindow(abd.hWnd, abd.rc.left, abd.rc.top,
+            NativeMethods.MoveWindow(abd.hWnd, abd.rc.left, abd.rc.top,
                 abd.rc.right - abd.rc.left, abd.rc.bottom - abd.rc.top, true);
 
             fBarIsRepositioning = false;

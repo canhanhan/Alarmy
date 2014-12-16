@@ -57,7 +57,7 @@ namespace Alarmy.Services
 
         private Dictionary<Guid, IAlarm> GetAlarms()
         {
-            lock (path)
+            lock (random)
             {
                 WaitAndOpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read, file =>
                 {
@@ -85,7 +85,7 @@ namespace Alarmy.Services
 
         private void Modify(Action<Dictionary<Guid, IAlarm>> operation)
         {
-            lock (path)
+            lock (random)
             {
                 GetAlarms();
                 operation.Invoke(alarmsCache);

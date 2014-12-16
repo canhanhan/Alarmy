@@ -2,6 +2,7 @@
 
 namespace Alarmy.Common
 {
+    [Serializable]
     public class InvalidStateException : ApplicationException
     {
     }

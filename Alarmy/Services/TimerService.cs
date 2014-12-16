@@ -40,9 +40,23 @@ namespace Alarmy.Services
 
         public void Dispose()
         {
-            if (_Timer != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~TimerService()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                _Timer.Dispose();
+                if (_Timer != null)
+                {
+                    _Timer.Dispose();
+                }
             }
         }
 
