@@ -1,13 +1,12 @@
 ﻿using Alarmy.Common;
 using System;
-using System.Timers;
 
-namespace Alarmy.Services
+namespace Alarmy.Infrastructure
 {
-    public class TimerService : ITimerService
+    public class Timer : ITimer
     {
         public event EventHandler Elapsed;
-        private readonly Timer _Timer;
+        private readonly System.Timers.Timer _Timer;
 
         public double Interval
         {
@@ -21,10 +20,9 @@ namespace Alarmy.Services
             }
         }
 
-        public TimerService()
+        public Timer()
         {
-            _Timer = new Timer();
-            _Timer.AutoReset = true;
+            _Timer = new System.Timers.Timer() { AutoReset = true };
             _Timer.Elapsed += _Timer_Elapsed;
         }
 
@@ -44,7 +42,7 @@ namespace Alarmy.Services
             GC.SuppressFinalize(this);
         }
 
-        ~TimerService()
+        ~Timer()
         {
             Dispose(false);
         }
@@ -60,7 +58,7 @@ namespace Alarmy.Services
             }
         }
 
-        private void _Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private void _Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             if (Elapsed != null)
             {

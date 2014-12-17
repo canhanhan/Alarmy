@@ -10,6 +10,7 @@ namespace Alarmy.Common
         string CancelReason { get; set; }
         DateTime Time { get; set; }
         bool IsWorthShowing { get; }
+        bool IsHushed { get; set; }
         void Set(DateTime time);
         void Cancel(string reason);
         void Complete();

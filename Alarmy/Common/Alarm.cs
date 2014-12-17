@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Castle.Core.Logging;
+using System;
 
 namespace Alarmy.Common
 {
     public class Alarm : IAlarm
     {
-        private Guid _Id = Guid.NewGuid();
-
         public const int ISWORTHSHOWING_FRESNESS = 1;
+
+        private Guid _Id = Guid.NewGuid();
         private readonly IDateTimeProvider _DateTimeProvider;
 
         public Guid Id
@@ -29,6 +30,8 @@ namespace Alarmy.Common
 
         public DateTime Time { get; set; }
 
+        public bool IsHushed { get; set; }
+
         public bool IsWorthShowing
         {
             get
@@ -49,6 +52,7 @@ namespace Alarmy.Common
         public void Set(DateTime time)
         {
             Time = time;
+            IsHushed = false;
             SetStatus(AlarmStatus.Set);
         }
 
@@ -128,6 +132,11 @@ namespace Alarmy.Common
                     SetStatus(AlarmStatus.Missed);
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} ({1} - {2})", this.Title, this.Time.ToShortDateString(), this.Id.ToString("B"));
         }
 
         internal void SetStatus(AlarmStatus status)

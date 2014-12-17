@@ -7,11 +7,13 @@ namespace Alarmy.Services
 {
     internal class AlarmService : IAlarmService, IDisposable
     {
+        private const int DEFAULT_INTERVAL = 30;
         private static readonly AlarmStatus[] ALARM_STATUSES_TO_CHECK = new [] { AlarmStatus.Ringing, AlarmStatus.Set };
-        private readonly ITimerService _Timer;
+        private readonly ITimer _Timer;
         private readonly IAlarmRepository _Repository;
 
         public event EventHandler<AlarmStatusChangedEventArgs> AlarmStatusChanged;
+        private AlarmStatus[] statusCache;
 
         public double Interval
         {
@@ -25,12 +27,12 @@ namespace Alarmy.Services
             }
         }
 
-        public AlarmService(IAlarmRepository repository, ITimerService timer)
+        public AlarmService(IAlarmRepository repository, ITimer timer)
         {
             _Repository = repository;
             _Timer = timer;
             _Timer.Elapsed += _Timer_Elapsed;
-            Interval = TimeSpan.FromSeconds(30).TotalMilliseconds;
+            Interval = TimeSpan.FromSeconds(DEFAULT_INTERVAL).TotalMilliseconds;
         }
 
         public void Start()
@@ -73,13 +75,15 @@ namespace Alarmy.Services
         private void _Timer_Elapsed(object sender, EventArgs e)
         {
             var alarms = _Repository.List().Where(ShouldCheck).ToList();
-            var statusCache = alarms.Select(x => x.Status).ToArray();
-            alarms.ForEach(alarm => alarm.Check());
+            if (this.statusCache == null)
+                this.statusCache = alarms.Select(x => x.Status).ToArray();
 
-            for (var i = 0; i < alarms.Count; i++)
+            alarms.ForEach(alarm => alarm.Check());
+                
+            for (var i = 0; i < alarms.Count && i < this.statusCache.Length; i++)
             {
                 var alarm = alarms[i];
-                var status = statusCache[i];
+                var status = this.statusCache[i];
                 if (alarm.Status != status)
                 {
                     if (AlarmStatusChanged != null)
@@ -88,6 +92,8 @@ namespace Alarmy.Services
                     }
                 }
             }
+
+            this.statusCache = alarms.Select(x => x.Status).ToArray();
         }
 
         private static bool ShouldCheck(IAlarm alarm)

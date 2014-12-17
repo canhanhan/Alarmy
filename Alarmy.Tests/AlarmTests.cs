@@ -231,6 +231,16 @@ namespace Alarmy.Tests
 
             Assert.AreEqual(AlarmStatus.Set, this.alarm.Status);
         }
+
+        [TestMethod]
+        public void Time_WhenSet_ChangesHush()
+        {
+            this.alarm.IsHushed = true; ;
+            this.alarm.Set(SAMPLE_DATETIME);
+
+            Assert.IsFalse(this.alarm.IsHushed);
+        }
+
         #endregion
 
         #region Snooze tests

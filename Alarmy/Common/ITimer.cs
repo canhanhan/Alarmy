@@ -2,7 +2,7 @@
 
 namespace Alarmy.Common
 {
-    public interface ITimerService : IDisposable
+    public interface ITimer : IDisposable
     {
         event EventHandler Elapsed;
         double Interval { get; set; }

@@ -29,11 +29,13 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.listView1 = new System.Windows.Forms.ListView();
             this.listViewContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.newAlarmToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.soundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.popupOnAlarmMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,6 +47,7 @@
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.hushToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listViewContext.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.itemContext.SuspendLayout();
@@ -72,47 +75,58 @@
             this.newAlarmToolStripMenuItem,
             this.toolStripMenuItem1,
             this.soundToolStripMenuItem,
+            this.popupOnAlarmMenuItem,
             this.hideToolStripMenuItem,
             this.toolStripMenuItem2,
             this.exitToolStripMenuItem});
             this.listViewContext.Name = "listViewContext";
-            this.listViewContext.Size = new System.Drawing.Size(134, 104);
+            this.listViewContext.Size = new System.Drawing.Size(162, 126);
             // 
             // newAlarmToolStripMenuItem
             // 
             this.newAlarmToolStripMenuItem.Name = "newAlarmToolStripMenuItem";
-            this.newAlarmToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.newAlarmToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
             this.newAlarmToolStripMenuItem.Text = "&New Alarm";
             this.newAlarmToolStripMenuItem.Click += new System.EventHandler(this.newAlarmToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(130, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(158, 6);
             // 
             // soundToolStripMenuItem
             // 
             this.soundToolStripMenuItem.CheckOnClick = true;
             this.soundToolStripMenuItem.Name = "soundToolStripMenuItem";
-            this.soundToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.soundToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
             this.soundToolStripMenuItem.Text = "&Sound";
+            this.soundToolStripMenuItem.CheckedChanged += new System.EventHandler(this.soundToolStripMenuItem_CheckedChanged);
+            // 
+            // popupOnAlarmMenuItem
+            // 
+            this.popupOnAlarmMenuItem.Checked = true;
+            this.popupOnAlarmMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.popupOnAlarmMenuItem.Name = "popupOnAlarmMenuItem";
+            this.popupOnAlarmMenuItem.Size = new System.Drawing.Size(161, 22);
+            this.popupOnAlarmMenuItem.Text = "&Popup on Alarm";
+            this.popupOnAlarmMenuItem.CheckedChanged += new System.EventHandler(this.popupOnAlarmMenuItem_CheckedChanged);
             // 
             // hideToolStripMenuItem
             // 
             this.hideToolStripMenuItem.Name = "hideToolStripMenuItem";
-            this.hideToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.hideToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
             this.hideToolStripMenuItem.Text = "&Hide";
             this.hideToolStripMenuItem.Click += new System.EventHandler(this.hideToolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(130, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(158, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
             this.exitToolStripMenuItem.Text = "&Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -152,28 +166,29 @@
             this.itemContext.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.changeToolStripMenuItem,
             this.completeToolStripMenuItem,
-            this.toolStripMenuItem4});
+            this.toolStripMenuItem4,
+            this.hushToolStripMenuItem});
             this.itemContext.Name = "itemContext";
-            this.itemContext.Size = new System.Drawing.Size(127, 70);
+            this.itemContext.Size = new System.Drawing.Size(153, 114);
             // 
             // changeToolStripMenuItem
             // 
             this.changeToolStripMenuItem.Name = "changeToolStripMenuItem";
-            this.changeToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
+            this.changeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.changeToolStripMenuItem.Text = "&Change";
             this.changeToolStripMenuItem.Click += new System.EventHandler(this.changeToolStripMenuItem_Click);
             // 
             // completeToolStripMenuItem
             // 
             this.completeToolStripMenuItem.Name = "completeToolStripMenuItem";
-            this.completeToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
+            this.completeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.completeToolStripMenuItem.Text = "Co&mplete";
             this.completeToolStripMenuItem.Click += new System.EventHandler(this.completeToolStripMenuItem_Click);
             // 
             // toolStripMenuItem4
             // 
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(126, 22);
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem4.Text = "Ca&ncel";
             this.toolStripMenuItem4.Click += new System.EventHandler(this.toolStripMenuItem4_Click);
             // 
@@ -185,9 +200,16 @@
             // 
             // timer1
             // 
-            this.timer1.Enabled = true;
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // hushToolStripMenuItem
+            // 
+            this.hushToolStripMenuItem.CheckOnClick = true;
+            this.hushToolStripMenuItem.Name = "hushToolStripMenuItem";
+            this.hushToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.hushToolStripMenuItem.Text = "&Hush";
+            this.hushToolStripMenuItem.Click += new System.EventHandler(this.hushToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -196,6 +218,7 @@
             this.ClientSize = new System.Drawing.Size(217, 1040);
             this.Controls.Add(this.tableLayoutPanel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.Text = "AlarmsForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AlarmsForm_FormClosing);
@@ -228,5 +251,7 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.ToolStripMenuItem popupOnAlarmMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hushToolStripMenuItem;
     }
 }

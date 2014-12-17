@@ -63,10 +63,10 @@
             this.label2.TabIndex = 2;
             this.label2.Text = "Reason:";
             // 
-            // textBox1
+            // CancelReason
             // 
             this.CancelReason.Location = new System.Drawing.Point(69, 36);
-            this.CancelReason.Name = "textBox1";
+            this.CancelReason.Name = "CancelReason";
             this.CancelReason.Size = new System.Drawing.Size(290, 20);
             this.CancelReason.TabIndex = 3;
             // 
@@ -108,7 +108,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "CancelForm";
-            this.Text = "CancelForm";
+            this.Text = "Cancel Alarm";
             this.ResumeLayout(false);
             this.PerformLayout();
 

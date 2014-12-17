@@ -1,6 +1,7 @@
 ﻿using Alarmy.Common;
 using Alarmy.Services;
 using Alarmy.Views;
+using Castle.Facilities.Logging;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
@@ -14,11 +15,15 @@ namespace Alarmy.Infrastructure
     {
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
+            container.AddFacility<LoggingFacility>(f => f.UseNLog().WithAppConfig());
+
+            container.Register(Component.For<Settings>());
+
             container.Register(Component
                 .For<IAlarmRepository>()
                 .ImplementedBy<FileAlarmRepository>()
                 .LifestyleSingleton()
-                .DependsOn(Property.ForKey("path").Eq(Environment.GetCommandLineArgs()[1]))
+                .DynamicParameters((k, d) => d["path"] = k.Resolve<Settings>().AlarmDatabasePath)
             );
 
             container.Register(Component
@@ -28,8 +33,8 @@ namespace Alarmy.Infrastructure
             );
 
             container.Register(Component
-                .For<ITimerService>()
-                .ImplementedBy<TimerService>()
+                .For<ITimer>()
+                .ImplementedBy<Timer>()
                 .LifestyleSingleton()
             );
 

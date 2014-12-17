@@ -11,7 +11,7 @@ namespace Alarmy.Tests
     public class AlarmServiceTests
     {
         private IAlarmRepository repository;
-        private ITimerService timer;
+        private ITimer timer;
         private AlarmService service;
 
         private static IAlarm GetAlarm(AlarmStatus status)
@@ -30,7 +30,7 @@ namespace Alarmy.Tests
         public void Setup()
         {
             this.repository = Substitute.For<IAlarmRepository>();
-            this.timer = Substitute.For<ITimerService>();
+            this.timer = Substitute.For<ITimer>();
             this.service = new AlarmService(this.repository, timer);
             this.service.Start();
         }
