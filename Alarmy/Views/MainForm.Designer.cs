@@ -44,10 +44,12 @@
             this.itemContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.changeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.completeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.cancelStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hushToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.titleHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.timeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.statusHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.listViewContext.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.itemContext.SuspendLayout();
@@ -55,6 +57,10 @@
             // 
             // listView1
             // 
+            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.titleHeader,
+            this.timeHeader,
+            this.statusHeader});
             this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listView1.FullRowSelect = true;
             this.listView1.GridLines = true;
@@ -67,7 +73,6 @@
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
-            this.listView1.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
             this.listView1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseDown);
             // 
             // listViewContext
@@ -167,7 +172,7 @@
             this.itemContext.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.changeToolStripMenuItem,
             this.completeToolStripMenuItem,
-            this.toolStripMenuItem4,
+            this.cancelStripMenuItem,
             this.hushToolStripMenuItem});
             this.itemContext.Name = "itemContext";
             this.itemContext.Size = new System.Drawing.Size(127, 92);
@@ -186,12 +191,12 @@
             this.completeToolStripMenuItem.Text = "Co&mplete";
             this.completeToolStripMenuItem.Click += new System.EventHandler(this.completeToolStripMenuItem_Click);
             // 
-            // toolStripMenuItem4
+            // cancelStripMenuItem
             // 
-            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(126, 22);
-            this.toolStripMenuItem4.Text = "Ca&ncel";
-            this.toolStripMenuItem4.Click += new System.EventHandler(this.toolStripMenuItem4_Click);
+            this.cancelStripMenuItem.Name = "cancelStripMenuItem";
+            this.cancelStripMenuItem.Size = new System.Drawing.Size(126, 22);
+            this.cancelStripMenuItem.Text = "Ca&ncel";
+            this.cancelStripMenuItem.Click += new System.EventHandler(this.cancelToolStripMenuItem_Click);
             // 
             // hushToolStripMenuItem
             // 
@@ -207,10 +212,17 @@
             this.notifyIcon1.Text = "notifyIcon1";
             this.notifyIcon1.Visible = true;
             // 
-            // timer1
+            // titleHeader
             // 
-            this.timer1.Interval = 1000;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            this.titleHeader.Text = "Title";
+            // 
+            // timeHeader
+            // 
+            this.timeHeader.Text = "Time";
+            // 
+            // statusHeader
+            // 
+            this.statusHeader.Text = "Status";
             // 
             // MainForm
             // 
@@ -249,10 +261,12 @@
         private System.Windows.Forms.ContextMenuStrip itemContext;
         private System.Windows.Forms.ToolStripMenuItem changeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem completeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
+        private System.Windows.Forms.ToolStripMenuItem cancelStripMenuItem;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
-        private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.ToolStripMenuItem popupOnAlarmMenuItem;
         private System.Windows.Forms.ToolStripMenuItem hushToolStripMenuItem;
+        private System.Windows.Forms.ColumnHeader titleHeader;
+        private System.Windows.Forms.ColumnHeader timeHeader;
+        private System.Windows.Forms.ColumnHeader statusHeader;
     }
 }

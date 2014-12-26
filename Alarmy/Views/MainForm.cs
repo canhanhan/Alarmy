@@ -11,15 +11,13 @@ namespace Alarmy.Views
 {
     internal partial class MainForm : AppBar
     {
+        private delegate void ShowDelegate(AlarmStatusChangedEventArgs args);
+        private delegate void MethodInvoker<TArg>(TArg arg1);
+
         private readonly SoundPlayer soundPlayer;
         private readonly IAlarmService alarmService;
         private readonly int alarmListGroupInterval;
-
-        private delegate void ShowDelegate(AlarmStatusChangedEventArgs args);
-
         private ILogger logger = NullLogger.Instance;
-        private Point clickedPosition;
-        private bool WasRegistered;
 
         public ILogger Logger
         {
@@ -30,11 +28,13 @@ namespace Alarmy.Views
         public MainForm(IAlarmService alarmService, Settings settings)
         {
             this.alarmListGroupInterval = settings.AlarmListGroupInterval;
-            var alarmSoundPath = settings.AlarmSoundFile;
-            this.soundPlayer = new SoundPlayer(alarmSoundPath);
+            this.soundPlayer = new SoundPlayer(settings.AlarmSoundFile);
             this.alarmService = alarmService;
             this.alarmService.Interval = settings.CheckInterval;
             this.alarmService.AlarmStatusChanged += alarmService_AlarmStatusChanged;
+            this.alarmService.AlarmAdded += alarmService_AlarmAdded;              
+            this.alarmService.AlarmRemoved += alarmService_AlarmRemoved;
+            this.alarmService.AlarmUpdated += alarmService_AlarmUpdated;
 
             InitializeComponent();
             listView1.DoubleBuffered(true);
@@ -42,93 +42,56 @@ namespace Alarmy.Views
 
             soundToolStripMenuItem.Checked = settings.EnableSound;
             popupOnAlarmMenuItem.Checked = !settings.DontPopup;
-            timer1.Interval = settings.RefreshInterval;
-            timer1.Enabled = true;
 
             if (settings.StartHidden)
                 hideToolStripMenuItem_Click(null, null);
         }
 
+        #region AlarmService Events
+        private void alarmService_AlarmUpdated(object sender, AlarmEventArgs e)
+        {
+            this.Invoke(new MethodInvoker<IAlarm>(UpdateAlarm), e.Alarm);
+        }
+
+        private void alarmService_AlarmRemoved(object sender, AlarmEventArgs e)
+        {
+            this.Invoke(new MethodInvoker<IAlarm>(RemoveAlarm), e.Alarm);
+        }
+
+        private void alarmService_AlarmAdded(object sender, AlarmEventArgs e)
+        {
+            this.Invoke(new MethodInvoker<IAlarm>(AddAlarm), e.Alarm);
+        }
+
+        private void alarmService_AlarmStatusChanged(object sender, AlarmStatusChangedEventArgs e)
+        {
+            if ((e.Alarm.Status == AlarmStatus.Ringing || e.Alarm.Status == AlarmStatus.Missed) && !Visible)
+            {
+                this.Invoke(new MethodInvoker(this.Show));
+            }
+
+            this.alarmService_AlarmUpdated(this, new AlarmEventArgs(e.Alarm));
+        }
+        #endregion
+
+        #region Form Events
         private void AlarmsForm_Load(object sender, EventArgs e)
         {
             alarmService.Start();
-            RefreshList();
             RegisterBar();
         }
 
         private void AlarmsForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            this.alarmService.Stop();
             RegisterBar();
         }
-
-        private void alarmService_AlarmStatusChanged(object sender, AlarmStatusChangedEventArgs e)
-        {
-            Invoke(new ShowDelegate(AlarmStatusChanged), e);
-        }
-
-        private void AlarmStatusChanged(AlarmStatusChangedEventArgs args)
-        {            
-            if ((args.Alarm.Status == AlarmStatus.Ringing || args.Alarm.Status == AlarmStatus.Missed) && !Visible)
-            {
-                Show();
-            }
-
-            RefreshList();
-        }
-
-        private void CheckForAlarmSound(IEnumerable<IAlarm> alarms)
-        {
-            if (alarms.Any(x => x.Status == AlarmStatus.Ringing && !x.IsHushed))
-            {
-                if (!this.soundPlayer.IsPlaying)
-                    this.soundPlayer.Play();
-            }
-            else
-            {
-                if (this.soundPlayer.IsPlaying)
-                    this.soundPlayer.Stop();
-            }
-        }
-
-        private void RefreshList()
-        {
-            if (listView1.SelectedItems.Count > 0 && itemContext.Visible)
-            {
-                return;
-            }
-            listView1.BeginUpdate();
-            listView1.Clear();
-            listView1.View = View.Details;
-            listView1.ShowGroups = true;
-            listView1.Columns.Add("Title");
-            listView1.Columns.Add("Time");
-            listView1.Columns.Add("Status");
-
-            var alarms = alarmService.List().ToArray();
-            alarms.OfType<Alarm>()
-                                    .Where(x => x.IsWorthShowing)
-                                    .OrderBy(x => x.Time)
-                                    .GroupBy(x => x.Time.RoundUp(TimeSpan.FromMinutes(this.alarmListGroupInterval)))
-                                    .ToList().ForEach(x =>
-            {
-                var group = new ListViewGroup(x.Key.ToString(), String.Format("{0}-{1}", x.Key.AddMinutes(-this.alarmListGroupInterval).ToShortTimeString(), x.Key.ToShortTimeString()));
-                listView1.Groups.Add(group);
-                listView1.Items.AddRange(x.Select(item => new ListViewItem(new[] { item.Title, item.Time.ToShortTimeString(), AlarmStatusText(item) }, group) { Tag = item, BackColor = GetColor(item), ToolTipText = item.CancelReason }).ToArray());
-            });
-
-            listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
-            listView1.EndUpdate();
-
-            if (this.soundToolStripMenuItem.Checked)
-                CheckForAlarmSound(alarms);
-        }
-
-        private static string AlarmStatusText(Alarm item)
-        {
-            return item.Status.ToString() + (item.IsHushed ? " (Hushed)" : string.Empty);
-        }
+        #endregion
 
         #region Window Resize, Move
+        private Point clickedPosition;
+        private bool WasRegistered;
+
         private void label1_MouseMove(object sender, MouseEventArgs e)
         {
             if (clickedPosition != Point.Empty && e.Button.HasFlag(MouseButtons.Left))
@@ -192,6 +155,7 @@ namespace Alarmy.Views
         }
         #endregion
 
+        #region Menu Events
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
@@ -218,7 +182,6 @@ namespace Alarmy.Views
 
             hushToolStripMenuItem.Checked = alarm.IsHushed;
             alarmService.Update(alarm);
-            RefreshList();
         }
 
         private void completeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -231,10 +194,9 @@ namespace Alarmy.Views
             this.Logger.Info(alarm + " is completed.");
             alarm.Complete();
             alarmService.Update(alarm);
-            RefreshList();
         }
 
-        private void toolStripMenuItem4_Click(object sender, EventArgs e)
+        private void cancelToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listView1.SelectedItems.Count == 0)
             {
@@ -246,10 +208,9 @@ namespace Alarmy.Views
             if (cancelForm.ShowDialog() == DialogResult.OK)
             {
                 var reason = cancelForm.CancelReason.Text;
-                this.Logger.InfoFormat("{0} is cancelled. Reason: {1}", alarm.ToString(), reason);                
+                this.Logger.InfoFormat("{0} is cancelled. Reason: {1}", alarm.ToString(), reason);
                 alarm.Cancel(reason);
                 alarmService.Update(alarm);
-                RefreshList();
             }
         }
 
@@ -270,7 +231,6 @@ namespace Alarmy.Views
                 alarm.Title = alarmForm.timeAlarmTitle.Text;
                 alarm.Set(alarmForm.timeAlarmTime.Value);
                 alarmService.Update(alarm);
-                RefreshList();
             }
         }
 
@@ -286,7 +246,6 @@ namespace Alarmy.Views
                 alarm.Set(alarmForm.timeAlarmTime.Value);
                 this.Logger.Info(alarm.ToString() + " is created");
                 alarmService.Add(alarm);
-                RefreshList();
             }
         }
 
@@ -304,34 +263,11 @@ namespace Alarmy.Views
             }
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            RefreshList();
-        }
-
-        private static Color GetColor(Alarm alarm)
-        {
-            switch (alarm.Status)
-            {
-                case AlarmStatus.Completed:
-                    return Color.Green;
-                case AlarmStatus.Cancelled:
-                    return Color.Gray;
-                case AlarmStatus.Ringing:
-                    return Color.Yellow;
-                case AlarmStatus.Missed:
-                    return Color.Red;
-                default:
-                    return Color.White;
-            }
-        }
-
         private void soundToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (this.soundToolStripMenuItem.Checked)
+            if (soundToolStripMenuItem.Checked)
             {
                 Logger.Info("Sound is enabled.");
-                this.RefreshList();
             }
             else
             {
@@ -353,33 +289,139 @@ namespace Alarmy.Views
             }
 
         }
+        #endregion
 
+        #region ListView Events
         private void listView1_MouseDown(object sender, MouseEventArgs e)
         {
-            if (!e.Button.HasFlag(MouseButtons.Right))
+            var item = listView1.GetItemAt(e.X, e.Y);
+            if (item != null)
             {
-                return;
+                listView1.SelectedItems.Clear();
+                item.Selected = true;
+
+                var alarm = item.Tag as Alarm;
+                completeToolStripMenuItem.Enabled = alarm.CanBeCompleted;
+                cancelStripMenuItem.Enabled = alarm.CanBeCancelled;
+                changeToolStripMenuItem.Enabled = alarm.CanBeSet;
+                hushToolStripMenuItem.Checked = alarm.IsHushed;
+                hushToolStripMenuItem.Enabled = alarm.Status == AlarmStatus.Ringing;
+
+                itemContext.Show(Cursor.Position);            
+            } 
+            else if (e.Button.HasFlag(MouseButtons.Right))
+            {
+                listViewContext.Show(Cursor.Position);
             }
-
-            if (listView1.GetItemAt(e.X, e.Y) != null)
-                return;
-
-            listViewContext.Show(Cursor.Position);
         }
 
-        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        #endregion
+
+        private ListViewItem GetAlarmItem(IAlarm alarm)
         {
-            if (listView1.SelectedItems.Count == 0)
-                return;
+            return this.listView1.Items.Cast<ListViewItem>().Single(x => ((IAlarm)x.Tag).Id == alarm.Id);
+        }
 
-            var alarm = listView1.SelectedItems[0].Tag as Alarm;
-            completeToolStripMenuItem.Enabled = alarm.CanBeCompleted;
-            toolStripMenuItem4.Enabled = alarm.CanBeCancelled;
-            changeToolStripMenuItem.Enabled = alarm.CanBeSet;
-            hushToolStripMenuItem.Checked = alarm.IsHushed;
-            hushToolStripMenuItem.Enabled = alarm.Status == AlarmStatus.Ringing;
+        private void UpdateAlarm(IAlarm alarm)
+        {
+            var alarmItem = GetAlarmItem(alarm);
+            UpdateAlarmItem(alarm, alarmItem);
+            RefreshAlarmGroups();
+        }
 
-            itemContext.Show(Cursor.Position);            
+        private void RemoveAlarm(IAlarm alarm)
+        {
+            var alarmItem = GetAlarmItem(alarm);
+            listView1.Items.Remove(alarmItem);
+            RefreshAlarmGroups();
+        }
+
+        private void AddAlarm(IAlarm alarm)
+        {
+            var alarmItem = new ListViewItem();
+            alarmItem.SubItems.Add("");
+            alarmItem.SubItems.Add("");
+
+            UpdateAlarmItem(alarm, alarmItem);
+            listView1.Items.Add(alarmItem);
+            RefreshAlarmGroups();
+        }
+
+        private void RefreshAlarmGroups()
+        {
+            listView1.BeginUpdate();
+
+            listView1.Items.Cast<ListViewItem>()
+                .OrderBy(x => ((IAlarm)x.Tag).Time)
+                .GroupBy(x => ((IAlarm)x.Tag).Time.RoundUp(TimeSpan.FromMinutes(this.alarmListGroupInterval)))
+                .ToList().ForEach(groups =>
+                {
+                    var key = groups.Key.ToString();
+                    var title = String.Format("{0}-{1}", groups.Key.AddMinutes(-this.alarmListGroupInterval).ToShortTimeString(), groups.Key.ToShortTimeString());
+
+                    var group = listView1.Groups[key];
+                    if (group == null)
+                    {
+                        group = new ListViewGroup(key, title);
+                        listView1.Groups.Add(group);
+                    }
+
+                    groups.ToList().ForEach(item => item.Group = group);
+                });
+
+            listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView1.EndUpdate();
+
+            if (this.soundToolStripMenuItem.Checked)
+                CheckForAlarmSound();
+
+        }
+
+        private void CheckForAlarmSound()
+        {
+            var alarms = this.alarmService.List();
+            if (alarms.Any(x => x.Status == AlarmStatus.Ringing && !x.IsHushed))
+            {
+                if (!this.soundPlayer.IsPlaying)
+                    this.soundPlayer.Play();
+            }
+            else
+            {
+                if (this.soundPlayer.IsPlaying)
+                    this.soundPlayer.Stop();
+            }
+        }
+
+        private static void UpdateAlarmItem(IAlarm alarm, ListViewItem alarmItem)
+        {
+            alarmItem.Text = alarm.Title;
+            alarmItem.SubItems[1].Text = alarm.Time.ToShortTimeString();
+            alarmItem.SubItems[2].Text = AlarmStatusText(alarm);
+            alarmItem.Tag = alarm;
+            alarmItem.BackColor = GetColor(alarm);
+            alarmItem.ToolTipText = alarm.CancelReason;
+        }
+
+        private static Color GetColor(IAlarm alarm)
+        {
+            switch (alarm.Status)
+            {
+                case AlarmStatus.Completed:
+                    return Color.Green;
+                case AlarmStatus.Cancelled:
+                    return Color.Gray;
+                case AlarmStatus.Ringing:
+                    return Color.Yellow;
+                case AlarmStatus.Missed:
+                    return Color.Red;
+                default:
+                    return Color.White;
+            }
+        }
+
+        private static string AlarmStatusText(IAlarm item)
+        {
+            return item.Status.ToString() + (item.IsHushed ? " (Hushed)" : string.Empty);
         }
     }
 }
