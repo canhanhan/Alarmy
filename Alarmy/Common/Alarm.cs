@@ -63,14 +63,16 @@ namespace Alarmy.Common
         }
 #endif
 
-        public virtual void Cancel(string reason)
+        public void Cancel(string reason)
         {
+            IsHushed = false;
             CancelReason = reason;
             SetStatus(AlarmStatus.Cancelled);
         }
 
-        public virtual void Complete()
+        public void Complete()
         {
+            IsHushed = false;
             Status = AlarmStatus.Completed;
         }
 
