@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Alarmy.Tests
 {
-    public class InMemoryAlarmRepository : IAlarmRepository
+    internal class InMemoryAlarmRepository : IAlarmRepository
     {
         private readonly Dictionary<Guid, IAlarm> alarms;
 
