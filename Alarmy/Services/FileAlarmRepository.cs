@@ -12,13 +12,75 @@ namespace Alarmy.Services
 {
     public class FileAlarmRepository : IAlarmRepository
     {
-        private readonly string path;
-        private readonly Random random = new Random();
-        private readonly JsonSerializerSettings settings;
-        private readonly JsonSerializer serializer;
+        private class SharedFile : IDisposable
+        {
+            public static SharedFile Read(string path)
+            {
+                return new SharedFile(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            }
 
+            public static SharedFile Write(string path)
+            {
+                return new SharedFile(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            }
+
+            public static implicit operator FileStream(SharedFile file)
+            {
+                return file.File;
+            }
+
+            private readonly Random random = new Random();      
+
+            private FileStream file;
+
+            public FileStream File
+            {
+                get
+                {
+                    return this.file;
+                }
+            }
+
+            private SharedFile(string path, FileMode mode, FileAccess access, FileShare share)
+            {
+                this.file = WaitAndOpenFile(path, mode, access, share);
+            }
+
+            public void Dispose()
+            {
+                if (this.file != null)
+                {
+                    this.file.Dispose();
+                    this.file = null;
+                }
+            }
+
+            private FileStream WaitAndOpenFile(string path, FileMode mode, FileAccess access, FileShare share)
+            {
+                while (true)
+                {
+                    try
+                    {
+                        return System.IO.File.Open(path, mode, access, share);
+                    }
+                    catch (IOException ex)
+                    {
+                        //If not file sharing exception then rethrow
+                        if (Marshal.GetHRForException(ex) != -2147024864)
+                        {
+                            throw;
+                        }
+                        Thread.Sleep(400 + (random.Next(10) * 10));
+                    }
+                }
+            }           
+        }
+
+        private readonly string path;
         private string lastHash;
         private Dictionary<Guid, IAlarm> alarmsCache;
+        private readonly JsonSerializerSettings settings;
+        private readonly JsonSerializer serializer;
 
         public FileAlarmRepository(string path)
         {
@@ -37,7 +99,10 @@ namespace Alarmy.Services
 
         public IEnumerable<IAlarm> List()
         {
-            return GetAlarms().Values;
+            using (var sharedFile = SharedFile.Read(this.path))
+            {
+                return GetAlarms(sharedFile).Values;
+            }
         }
 
         public void Add(IAlarm alarm)
@@ -55,81 +120,51 @@ namespace Alarmy.Services
             Add(alarm);
         }
 
-        private Dictionary<Guid, IAlarm> GetAlarms()
+        private Dictionary<Guid, IAlarm> GetAlarms(FileStream file)
         {
-            lock (random)
+            using (var md5 = MD5.Create())
             {
-                WaitAndOpenFile(path, FileMode.Open, FileAccess.Read, FileShare.Read, file =>
+                var hash = BitConverter.ToString(md5.ComputeHash(file));
+                if (lastHash == null || hash != lastHash)
                 {
-                    using (var md5 = MD5.Create())
+                    file.Position = 0;
+                    using (var streamReader = new StreamReader(file))
+                    using (var reader = new JsonTextReader(streamReader))
                     {
-                        var hash = BitConverter.ToString(md5.ComputeHash(file));
-                        if (lastHash == null || hash != lastHash)
-                        {
-                            file.Position = 0;
-                            using (var streamReader = new StreamReader(file))
-                            {
-                                using (var reader = new JsonTextReader(streamReader))
-                                {
-                                    alarmsCache = serializer.Deserialize<Dictionary<Guid, IAlarm>>(reader) ?? new Dictionary<Guid, IAlarm>();
-                                    lastHash = hash;
-                                }
-                            }
-                        }
+                        alarmsCache = GetWorthShowing(serializer.Deserialize<Dictionary<Guid, IAlarm>>(reader) ?? new Dictionary<Guid, IAlarm>());
+                        lastHash = hash;
                     }
-                });
-
-                return alarmsCache;
-            }
+                }
+            }               
+            return alarmsCache;            
         }
 
         private void Modify(Action<Dictionary<Guid, IAlarm>> operation)
         {
-            lock (random)
+            using (var file = SharedFile.Write(path))
             {
-                GetAlarms();
+                GetAlarms(file);
+                file.File.Position = 0;
                 operation.Invoke(alarmsCache);
-                Write();
+                Write(file);
             }
         }
 
-        private void Write()
+        private void Write(FileStream file)
         {
-            WaitAndOpenFile(path, FileMode.Open, FileAccess.Write, FileShare.Read, file =>
+            using (var streamWriter = new StreamWriter(file))
             {
-                using (var streamWriter = new StreamWriter(file))
+                using (var writer = new JsonTextWriter(streamWriter))
                 {
-                    using (var writer = new JsonTextWriter(streamWriter))
-                    {
-                        var alarmsToWrite = alarmsCache.Values.Where(x => x.IsWorthShowing).ToDictionary(x => x.Id);
-                        serializer.Serialize(writer, alarmsToWrite);
-                    }
-                }
-            });
-        }
-
-        private void WaitAndOpenFile(string path, FileMode mode, FileAccess access, FileShare share, Action<FileStream> operation)
-        {
-            while (true)
-            {
-                try
-                {
-                    using (var file = File.Open(path, mode, access, share))
-                    {
-                        operation.Invoke(file);
-                        return;
-                    }
-                }
-                catch (IOException ex)
-                {
-                    //If not file sharing exception then rethrow
-                    if (Marshal.GetHRForException(ex) != -2147024864)
-                    {
-                        throw;
-                    }
-                    Thread.Sleep(400 + (random.Next(10) * 10));
+                    var alarmsToWrite = alarmsCache.Values.Where(x => x.IsWorthShowing).ToDictionary(x => x.Id);
+                    serializer.Serialize(writer, alarmsToWrite);
                 }
             }
+        }
+
+        private static Dictionary<Guid, IAlarm> GetWorthShowing(Dictionary<Guid, IAlarm> alarms)
+        {
+            return alarms.Values.Where(x => x.IsWorthShowing).ToDictionary(x => x.Id);
         }
     }
 }
