@@ -113,7 +113,7 @@ namespace Alarmy.Views
             {
                 var group = new ListViewGroup(x.Key.ToString(), String.Format("{0}-{1}", x.Key.AddMinutes(-this.alarmListGroupInterval).ToShortTimeString(), x.Key.ToShortTimeString()));
                 listView1.Groups.Add(group);
-                listView1.Items.AddRange(x.Select(item => new ListViewItem(new[] { item.Title, item.Time.ToShortTimeString(), AlarmStatus(item) }, group) { Tag = item, BackColor = GetColor(item), ToolTipText = item.CancelReason }).ToArray());
+                listView1.Items.AddRange(x.Select(item => new ListViewItem(new[] { item.Title, item.Time.ToShortTimeString(), AlarmStatusText(item) }, group) { Tag = item, BackColor = GetColor(item), ToolTipText = item.CancelReason }).ToArray());
             });
 
             listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
@@ -123,7 +123,7 @@ namespace Alarmy.Views
                 CheckForAlarmSound(alarms);
         }
 
-        private static string AlarmStatus(Alarm item)
+        private static string AlarmStatusText(Alarm item)
         {
             return item.Status.ToString() + (item.IsHushed ? " (Hushed)" : string.Empty);
         }
@@ -191,31 +191,6 @@ namespace Alarmy.Views
             }
         }
         #endregion
-
-        private void listView1_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (!e.Button.HasFlag(MouseButtons.Right))
-            {
-                return;
-            }
-            var item = listView1.GetItemAt(e.X, e.Y);
-            if (item == null)
-            {
-                listViewContext.Show(Cursor.Position);
-            }
-            else
-            {
-                var alarm = item.Tag as Alarm;
-                item.Selected = true;
-                completeToolStripMenuItem.Enabled = alarm.CanBeCompleted;
-                toolStripMenuItem4.Enabled = alarm.CanBeCancelled;
-                changeToolStripMenuItem.Enabled = alarm.CanBeSet;
-                hushToolStripMenuItem.Checked = alarm.IsHushed;
-                hushToolStripMenuItem.Enabled = alarm.Status == AlarmStatus.Ringing;
-
-                itemContext.Show(Cursor.Position);
-            }
-        }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -377,6 +352,34 @@ namespace Alarmy.Views
                 Logger.Info("List is set not to popup on alarm");
             }
 
+        }
+
+        private void listView1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (!e.Button.HasFlag(MouseButtons.Right))
+            {
+                return;
+            }
+
+            if (listView1.GetItemAt(e.X, e.Y) != null)
+                return;
+
+            listViewContext.Show(Cursor.Position);
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count == 0)
+                return;
+
+            var alarm = listView1.SelectedItems[0].Tag as Alarm;
+            completeToolStripMenuItem.Enabled = alarm.CanBeCompleted;
+            toolStripMenuItem4.Enabled = alarm.CanBeCancelled;
+            changeToolStripMenuItem.Enabled = alarm.CanBeSet;
+            hushToolStripMenuItem.Checked = alarm.IsHushed;
+            hushToolStripMenuItem.Enabled = alarm.Status == AlarmStatus.Ringing;
+
+            itemContext.Show(Cursor.Position);            
         }
     }
 }

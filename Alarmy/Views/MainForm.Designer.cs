@@ -45,9 +45,9 @@
             this.changeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.completeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.hushToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.hushToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listViewContext.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.itemContext.SuspendLayout();
@@ -67,6 +67,7 @@
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
+            this.listView1.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
             this.listView1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseDown);
             // 
             // listViewContext
@@ -169,28 +170,36 @@
             this.toolStripMenuItem4,
             this.hushToolStripMenuItem});
             this.itemContext.Name = "itemContext";
-            this.itemContext.Size = new System.Drawing.Size(153, 114);
+            this.itemContext.Size = new System.Drawing.Size(127, 92);
             // 
             // changeToolStripMenuItem
             // 
             this.changeToolStripMenuItem.Name = "changeToolStripMenuItem";
-            this.changeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.changeToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
             this.changeToolStripMenuItem.Text = "&Change";
             this.changeToolStripMenuItem.Click += new System.EventHandler(this.changeToolStripMenuItem_Click);
             // 
             // completeToolStripMenuItem
             // 
             this.completeToolStripMenuItem.Name = "completeToolStripMenuItem";
-            this.completeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.completeToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
             this.completeToolStripMenuItem.Text = "Co&mplete";
             this.completeToolStripMenuItem.Click += new System.EventHandler(this.completeToolStripMenuItem_Click);
             // 
             // toolStripMenuItem4
             // 
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(126, 22);
             this.toolStripMenuItem4.Text = "Ca&ncel";
             this.toolStripMenuItem4.Click += new System.EventHandler(this.toolStripMenuItem4_Click);
+            // 
+            // hushToolStripMenuItem
+            // 
+            this.hushToolStripMenuItem.CheckOnClick = true;
+            this.hushToolStripMenuItem.Name = "hushToolStripMenuItem";
+            this.hushToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
+            this.hushToolStripMenuItem.Text = "&Hush";
+            this.hushToolStripMenuItem.Click += new System.EventHandler(this.hushToolStripMenuItem_Click);
             // 
             // notifyIcon1
             // 
@@ -202,14 +211,6 @@
             // 
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // hushToolStripMenuItem
-            // 
-            this.hushToolStripMenuItem.CheckOnClick = true;
-            this.hushToolStripMenuItem.Name = "hushToolStripMenuItem";
-            this.hushToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.hushToolStripMenuItem.Text = "&Hush";
-            this.hushToolStripMenuItem.Click += new System.EventHandler(this.hushToolStripMenuItem_Click);
             // 
             // MainForm
             // 
