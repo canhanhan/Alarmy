@@ -11,9 +11,12 @@ namespace Alarmy.Services
         private static readonly AlarmStatus[] ALARM_STATUSES_TO_CHECK = new [] { AlarmStatus.Ringing, AlarmStatus.Set };
         private readonly ITimer _Timer;
         private readonly IAlarmRepository _Repository;
+        private readonly Dictionary<Guid, IAlarm> _Cache;
 
+        public event EventHandler<AlarmEventArgs> AlarmAdded;
+        public event EventHandler<AlarmEventArgs> AlarmRemoved;
+        public event EventHandler<AlarmEventArgs> AlarmUpdated;
         public event EventHandler<AlarmStatusChangedEventArgs> AlarmStatusChanged;
-        private AlarmStatus[] statusCache;
 
         public double Interval
         {
@@ -30,8 +33,10 @@ namespace Alarmy.Services
         public AlarmService(IAlarmRepository repository, ITimer timer)
         {
             _Repository = repository;
+            _Cache = new Dictionary<Guid, IAlarm>();
             _Timer = timer;
             _Timer.Elapsed += _Timer_Elapsed;
+
             Interval = TimeSpan.FromSeconds(DEFAULT_INTERVAL).TotalMilliseconds;
         }
 
@@ -47,21 +52,24 @@ namespace Alarmy.Services
         public void Add(IAlarm alarm)
         {
             _Repository.Add(alarm);
+            RefreshCache();
         }
 
         public void Remove(IAlarm alarm)
         {
             _Repository.Remove(alarm);
+            RefreshCache();
         }
 
         public void Update(IAlarm alarm)
         {
             _Repository.Update(alarm);
+            RefreshCache();
         }
 
         public IEnumerable<IAlarm> List()
         {
-            return _Repository.List();
+            return _Cache.Values;
         }
 
         public void Dispose()
@@ -72,28 +80,53 @@ namespace Alarmy.Services
             }
         }
 
+        private void RefreshCache()
+        {
+            _Timer_Elapsed(null, null);
+        }
+
         private void _Timer_Elapsed(object sender, EventArgs e)
         {
-            var alarms = _Repository.List().Where(ShouldCheck).ToList();
-            if (this.statusCache == null)
-                this.statusCache = alarms.Select(x => x.Status).ToArray();
+            var alarms = _Repository.List().ToDictionary(x => x.Id);
+            alarms.Values.Where(ShouldCheck).ToList().ForEach(x => x.Check());
 
-            alarms.ForEach(alarm => alarm.Check());
-                
-            for (var i = 0; i < alarms.Count && i < this.statusCache.Length; i++)
+            var deletedAlarmKeys = this._Cache.Keys.Where(x => !alarms.ContainsKey(x)).ToArray();
+            foreach (var key in deletedAlarmKeys)
             {
-                var alarm = alarms[i];
-                var status = this.statusCache[i];
-                if (alarm.Status != status)
-                {
-                    if (AlarmStatusChanged != null)
-                    {
-                        AlarmStatusChanged.Invoke(this, new AlarmStatusChangedEventArgs(alarm, status));
-                    }
-                }
+                if (this.AlarmRemoved != null)
+                    this.AlarmRemoved.Invoke(this, new AlarmEventArgs(_Cache[key]));
+
+                _Cache.Remove(key);
             }
 
-            this.statusCache = alarms.Select(x => x.Status).ToArray();
+            foreach (var alarm in alarms.Values)
+            {
+                IAlarm cachedAlarm = null;
+                if (_Cache.TryGetValue(alarm.Id, out cachedAlarm))
+                {
+                    var statusChanged = cachedAlarm.Status != alarm.Status;
+                    var metadataChanged = !cachedAlarm.Equals(alarm, true);
+                    AlarmStatus status = default(AlarmStatus);
+
+                    if (statusChanged || metadataChanged)
+                    {
+                        status = cachedAlarm.Status;
+                        cachedAlarm.Import(alarm);
+
+                        if (statusChanged && this.AlarmStatusChanged != null)
+                            this.AlarmStatusChanged.Invoke(this, new AlarmStatusChangedEventArgs(cachedAlarm, status));
+
+                        if (metadataChanged && this.AlarmUpdated != null)
+                            this.AlarmUpdated.Invoke(this, new AlarmEventArgs(cachedAlarm));
+                    }
+                }
+                else
+                {
+                    this._Cache.Add(alarm.Id, alarm);
+                    if (this.AlarmAdded != null)
+                        this.AlarmAdded.Invoke(this, new AlarmEventArgs(alarm));
+                }
+            }           
         }
 
         private static bool ShouldCheck(IAlarm alarm)
