@@ -113,7 +113,7 @@ namespace Alarmy.Views
             {
                 var group = new ListViewGroup(x.Key.ToString(), String.Format("{0}-{1}", x.Key.AddMinutes(-this.alarmListGroupInterval).ToShortTimeString(), x.Key.ToShortTimeString()));
                 listView1.Groups.Add(group);
-                listView1.Items.AddRange(x.Select(item => new ListViewItem(new [] { item.Title, item.Time.ToShortTimeString(), item.Status.ToString() }, group) { Tag = item, BackColor = GetColor(item), ToolTipText = item.CancelReason }).ToArray());
+                listView1.Items.AddRange(x.Select(item => new ListViewItem(new[] { item.Title, item.Time.ToShortTimeString(), AlarmStatus(item) }, group) { Tag = item, BackColor = GetColor(item), ToolTipText = item.CancelReason }).ToArray());
             });
 
             listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
@@ -121,6 +121,11 @@ namespace Alarmy.Views
 
             if (this.soundToolStripMenuItem.Checked)
                 CheckForAlarmSound(alarms);
+        }
+
+        private static string AlarmStatus(Alarm item)
+        {
+            return item.Status.ToString() + (item.IsHushed ? " (Hushed)" : string.Empty);
         }
 
         #region Window Resize, Move
