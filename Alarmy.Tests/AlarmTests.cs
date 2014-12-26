@@ -271,7 +271,7 @@ namespace Alarmy.Tests
             this.alarm.Set(SAMPLE_DATETIME);
             this.dateTimeProvider.Now.Returns(SAMPLE_DATETIME.AddMinutes(-5));
 
-            this.alarm.Check();
+            this.alarm.CheckStatusChange();
 
             Assert.AreEqual(AlarmStatus.Set, this.alarm.Status);
         }
@@ -282,7 +282,7 @@ namespace Alarmy.Tests
             this.alarm.Set(SAMPLE_DATETIME);
             this.dateTimeProvider.Now.Returns(SAMPLE_DATETIME);
 
-            this.alarm.Check();
+            this.alarm.CheckStatusChange();
 
             Assert.AreEqual(AlarmStatus.Ringing, this.alarm.Status);
         }
@@ -293,7 +293,7 @@ namespace Alarmy.Tests
             this.alarm.Set(SAMPLE_DATETIME);
             this.dateTimeProvider.Now.Returns(SAMPLE_DATETIME.AddMinutes(5));
 
-            this.alarm.Check();
+            this.alarm.CheckStatusChange();
 
             Assert.AreEqual(AlarmStatus.Missed, this.alarm.Status);
         }
@@ -305,7 +305,7 @@ namespace Alarmy.Tests
             this.dateTimeProvider.Now.Returns(SAMPLE_DATETIME.AddMinutes(-5));
             this.alarm.Status = AlarmStatus.Completed;
 
-            this.alarm.Check();
+            this.alarm.CheckStatusChange();
 
             Assert.AreEqual(AlarmStatus.Completed, this.alarm.Status);
         }

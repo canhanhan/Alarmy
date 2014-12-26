@@ -5,7 +5,7 @@ namespace Alarmy.Common
 {
     public interface IAlarmService : IDisposable
     {
-        event EventHandler<AlarmStatusChangedEventArgs> AlarmStatusChanged;
+        event EventHandler<AlarmEventArgs> AlarmStatusChanged;
         event EventHandler<AlarmEventArgs> AlarmAdded;
         event EventHandler<AlarmEventArgs> AlarmRemoved;
         event EventHandler<AlarmEventArgs> AlarmUpdated;

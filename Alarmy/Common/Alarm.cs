@@ -1,11 +1,14 @@
 ﻿using Castle.Core.Logging;
 using System;
+using System.Linq;
 
 namespace Alarmy.Common
 {
     public class Alarm : IAlarm
     {
         public const int ISWORTHSHOWING_FRESNESS = 1;
+        private static readonly AlarmStatus[] ALARM_STATUSES_TO_CHECK = new[] { AlarmStatus.Ringing, AlarmStatus.Set };
+
 
         private Guid _Id = Guid.NewGuid();
         private readonly IDateTimeProvider _DateTimeProvider;
@@ -116,24 +119,24 @@ namespace Alarmy.Common
             }
         }
 
-        public void Check()
+        public bool CheckStatusChange()
         {
-            if (Status != AlarmStatus.Set && Status != AlarmStatus.Ringing)
-            {
-                return;
-            }
+            if (!ALARM_STATUSES_TO_CHECK.Any(status => status == this.Status))
+                return false;
+
             var time = GetTime();
             if (Status != AlarmStatus.Ringing && Time >= time && Time < time.AddMinutes(1))
             {
                 SetStatus(AlarmStatus.Ringing);
+                return true;
             }
-            else
+            else if (Time < time)
             {
-                if (Time < time)
-                {
-                    SetStatus(AlarmStatus.Missed);
-                }
+                SetStatus(AlarmStatus.Missed);
+                return true;
             }
+
+            return false;
         }
 
         public bool Equals(IAlarm alarm, bool compareOnlyMetadata)

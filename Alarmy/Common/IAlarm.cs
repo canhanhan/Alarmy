@@ -19,7 +19,7 @@ namespace Alarmy.Common
         bool CanBeRinging { get; }
         bool CanBeSet { get; }
         bool CanBeMissed { get; }
-        void Check();
+        bool CheckStatusChange();
 
         bool Equals(IAlarm alarm, bool compareOnlyMetadata);
         void Import(IAlarm alarm);

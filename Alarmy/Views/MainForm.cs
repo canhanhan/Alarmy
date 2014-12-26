@@ -11,7 +11,6 @@ namespace Alarmy.Views
 {
     internal partial class MainForm : AppBar
     {
-        private delegate void ShowDelegate(AlarmStatusChangedEventArgs args);
         private delegate void MethodInvoker<TArg>(TArg arg1);
 
         private readonly SoundPlayer soundPlayer;
@@ -63,7 +62,7 @@ namespace Alarmy.Views
             this.Invoke(new MethodInvoker<IAlarm>(AddAlarm), e.Alarm);
         }
 
-        private void alarmService_AlarmStatusChanged(object sender, AlarmStatusChangedEventArgs e)
+        private void alarmService_AlarmStatusChanged(object sender, AlarmEventArgs e)
         {
             if ((e.Alarm.Status == AlarmStatus.Ringing || e.Alarm.Status == AlarmStatus.Missed) && !Visible)
             {
