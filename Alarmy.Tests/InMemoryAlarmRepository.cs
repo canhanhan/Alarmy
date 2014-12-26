@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Alarmy.Services
+namespace Alarmy.Tests
 {
     public class InMemoryAlarmRepository : IAlarmRepository
     {

@@ -96,7 +96,6 @@
     <Compile Include="Infrastructure\WindsorInstaller.cs" />
     <Compile Include="Infrastructure\Extensions.cs" />
     <Compile Include="Infrastructure\NativeMethods.cs" />
-    <Compile Include="Services\InMemoryAlarmRepository.cs" />
     <Compile Include="Services\FileAlarmRepository.cs" />
     <Compile Include="Views\CancelForm.cs">
       <SubType>Form</SubType>
