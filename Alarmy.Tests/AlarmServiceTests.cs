@@ -4,6 +4,8 @@ using Alarmy.Common;
 using NSubstitute;
 using System.Reflection;
 using Alarmy.Services;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace Alarmy.Tests
 {
@@ -14,9 +16,10 @@ namespace Alarmy.Tests
         private ITimer timer;
         private AlarmService service;
 
-        private static IAlarm GetAlarm(AlarmStatus status)
+        private static IAlarm GetAlarm(AlarmStatus status = default(AlarmStatus))
         {
             var alarm = Substitute.For<IAlarm>();
+            alarm.Id = Guid.NewGuid();
             alarm.Status.Returns(status);
             return alarm;
         }
@@ -26,65 +29,289 @@ namespace Alarmy.Tests
             var type = this.service.GetType();
             type.GetMethod("_Timer_Elapsed", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(this.service, new object[] { null, null });
         }
+
         [TestInitialize]
         public void Setup()
         {
-            this.repository = Substitute.For<IAlarmRepository>();
+            this.repository = new InMemoryAlarmRepository();
             this.timer = Substitute.For<ITimer>();
             this.service = new AlarmService(this.repository, timer);
             this.service.Start();
         }
 
         [TestMethod]
-        private void Check_WhenTimerElapse_ShouldCallCheckOnSetAndRingingAlarms()
+        public void Add_AddsToRepository()
         {
-            var alarm1 = GetAlarm(AlarmStatus.Set);
-            var alarm2 = GetAlarm(AlarmStatus.Ringing);
-            this.repository.List().Returns(new[] { alarm1, alarm2 });
+            var alarm = GetAlarm();
 
-            TickTimer();
+            this.service.Add(alarm);
 
-            alarm1.Received().Check();
-            alarm2.Received().Check();
+            Assert.AreSame(alarm, this.repository.List().First());
         }
 
         [TestMethod]
-        public void Check_WhenTimerElapse_ShouldNotCallCheckOnCompletedCancelledAndMissed()
+        public void Add_TriggersEvent()
         {
-            var alarm1 = GetAlarm(AlarmStatus.Completed);
-            var alarm2 = GetAlarm(AlarmStatus.Cancelled);
-            var alarm3 = GetAlarm(AlarmStatus.Missed);
-            this.repository.List().Returns(new[] { alarm1, alarm2, alarm3 });
-
-            TickTimer();
-
-            alarm1.DidNotReceive().Check();
-            alarm2.DidNotReceive().Check();
-            alarm3.DidNotReceive().Check();
-        }
-
-        [TestMethod]
-        public void Check_WhenTimerElapse_TriggersEventOnChangedAlarms()
-        {
-            var alarm1 = GetAlarm(AlarmStatus.Set);
-            alarm1.When(x => x.Check()).Do(x => alarm1.Status.Returns(AlarmStatus.Ringing));
-            var alarm2 = GetAlarm(AlarmStatus.Set);    
-            this.repository.List().Returns(new[] { alarm1, alarm2});           
-            AlarmStatus oldStatus = AlarmStatus.Completed;
-            IAlarm alarm = null;
-            bool hasCalled = false;
-            this.service.AlarmStatusChanged += (_, args) =>
+            var alarm = GetAlarm();
+            var triggerCount = 0;
+            AlarmEventArgs args = null;
+            this.service.AlarmAdded += (_, e) =>
             {
-                hasCalled = true;
-                oldStatus = args.OldStatus;
-                alarm = args.Alarm;
+                triggerCount++;
+                args = e;
             };
 
-            TickTimer();
+            this.service.Add(alarm);
 
-            Assert.IsTrue(hasCalled, "Event was not triggered");
-            Assert.AreSame(alarm1, alarm);
-            Assert.AreEqual(oldStatus, AlarmStatus.Set);
+            Assert.AreEqual(1, triggerCount);
+            Assert.AreSame(alarm, args.Alarm);
+        }
+
+        [TestMethod]
+        public void Remove_RemovesAlarm()
+        {
+            var alarm1 = GetAlarm();
+            var alarm2 = GetAlarm();
+            this.service.Add(alarm1);
+            this.service.Add(alarm2);
+
+            this.service.Remove(alarm2);
+            
+            Assert.AreSame(alarm1, this.repository.List().First());
+            Assert.AreEqual(1, this.repository.List().Count());
+        }
+
+        [TestMethod]
+        public void Remove_TriggersEvent()
+        {
+            var alarm = GetAlarm();
+            this.service.Add(alarm);
+            var triggerCount = 0;
+            AlarmEventArgs args = null;
+            this.service.AlarmRemoved += (_, e) =>
+            {
+                triggerCount++;
+                args = e;
+            };
+
+            this.service.Remove(alarm);
+
+            Assert.AreEqual(1, triggerCount);
+            Assert.AreSame(alarm, args.Alarm);
+        }
+
+        [TestMethod]
+        public void Update_UpdatesRepository()
+        {
+            var alarm1 = GetAlarm();
+            alarm1.Title = "Title";
+            this.service.Add(alarm1);
+            alarm1.Title = "New Title";
+
+            this.service.Update(alarm1);
+
+            Assert.AreSame(alarm1, this.repository.List().First());
+            Assert.AreEqual("New Title", this.repository.List().First().Title);
+        }
+
+        [TestMethod]
+        public void Update_TriggersEvent()
+        {
+            var alarm = GetAlarm();
+            this.service.Add(alarm);
+            var triggerCount = 0;
+            AlarmEventArgs args = null;
+            this.service.AlarmUpdated += (_, e) =>
+            {
+                triggerCount++;
+                args = e;
+            };
+
+            this.service.Update(alarm);
+
+            Assert.AreEqual(1, triggerCount);
+            Assert.AreSame(alarm, args.Alarm);
+        }
+
+
+        [TestMethod]
+        public void Timer_WhenAlarmDeletedFromRepository_TriggersEvent()
+        {
+            var alarm1 = GetAlarm();
+            var alarm2 = GetAlarm();
+            this.service.Add(alarm1);
+            this.service.Add(alarm2);
+            var triggerCount = 0;
+            AlarmEventArgs args = null;
+            this.service.AlarmRemoved += (_, e) =>
+            {
+                triggerCount++;
+                args = e;
+            };
+
+            this.repository.Remove(alarm2);
+            this.TickTimer();
+
+            Assert.AreEqual(1, triggerCount);
+            Assert.AreSame(alarm2, args.Alarm);
+        }
+
+        [TestMethod]
+        public void Timer_WhenAlarmUpdatedInRepository_TriggersEvent()
+        {
+            var alarm = GetAlarm();
+            this.service.Add(alarm);
+            alarm.Title = "New Title";
+            var triggerCount = 0;
+            AlarmEventArgs args = null;
+            this.service.AlarmUpdated += (_, e) =>
+            {
+                triggerCount++;
+                args = e;
+            };
+
+            this.repository.Update(alarm);
+            this.TickTimer();
+
+            Assert.AreEqual(1, triggerCount);
+            Assert.AreSame(alarm, args.Alarm);
+        }
+
+        [TestMethod]
+        public void Timer_WhenAlarmAddedToRepository_TriggersEvent()
+        {
+            var alarm = GetAlarm();
+            var triggerCount = 0;
+            AlarmEventArgs args = null;
+            this.service.AlarmAdded += (_, e) =>
+            {
+                triggerCount++;
+                args = e;
+            };
+
+            this.repository.Add(alarm);
+            this.TickTimer();
+
+            Assert.AreEqual(1, triggerCount);
+            Assert.AreSame(alarm, args.Alarm);
+        }
+
+        [TestMethod]
+        public void Timer_WhenAlarmStatusChangedInRepository_TriggersEvent()
+        {
+            var alarm = GetAlarm();
+            this.service.Add(alarm);
+            var triggerCount = 0;
+            AlarmEventArgs args = null;
+            this.service.AlarmStatusChanged += (_, e) =>
+            {
+                triggerCount++;
+                args = e;
+            };
+
+            alarm.CheckStatusChange().Returns(true);
+            this.repository.Update(alarm);
+            this.TickTimer();
+
+            Assert.AreEqual(1, triggerCount);
+            Assert.AreSame(alarm, args.Alarm);
+        }
+
+        [TestMethod]
+        public void Timer_WhenAlarmStatusChangedInRepository_TriggersOnlyOneEvent()
+        {
+            var alarm = GetAlarm();
+            this.service.Add(alarm);
+            var alarmAdded = false;
+            var alarmUpdated = false;
+            var alarmRemoved = false;
+            var alarmStatusChanged = false;
+
+            this.service.AlarmAdded += (_, e) => alarmAdded = true;
+            this.service.AlarmUpdated += (_, e) => alarmUpdated = true;
+            this.service.AlarmRemoved += (_, e) => alarmRemoved = true;
+            this.service.AlarmStatusChanged += (_, e) => alarmStatusChanged = true;
+
+            alarm.Equals(alarm, true).Returns(true);
+            alarm.CheckStatusChange().Returns(true);
+            this.repository.Update(alarm);
+            this.TickTimer();
+
+            Assert.IsFalse(alarmAdded);
+            Assert.IsFalse(alarmUpdated);
+            Assert.IsFalse(alarmRemoved);
+            Assert.IsTrue(alarmStatusChanged);
+        }
+
+        [TestMethod]
+        public void Timer_WhenAlarmAddedToRepository_TriggersOnlyOneEvent()
+        {
+            var alarm = GetAlarm();
+            var alarmAdded = false;
+            var alarmUpdated = false;
+            var alarmRemoved = false;
+            var alarmStatusChanged = false;
+
+            this.service.AlarmAdded += (_, e) => alarmAdded = true;
+            this.service.AlarmUpdated += (_, e) => alarmUpdated = true;
+            this.service.AlarmRemoved += (_, e) => alarmRemoved = true;
+            this.service.AlarmStatusChanged += (_, e) => alarmStatusChanged = true;
+
+            this.repository.Add(alarm);
+            this.TickTimer();
+
+            Assert.IsTrue(alarmAdded);
+            Assert.IsFalse(alarmUpdated);
+            Assert.IsFalse(alarmRemoved);
+            Assert.IsFalse(alarmStatusChanged);
+        }
+
+        [TestMethod]
+        public void Timer_WhenAlarmRemovedFromRepository_TriggersOnlyOneEvent()
+        {
+            var alarm = GetAlarm();
+            this.service.Add(alarm);
+            var alarmAdded = false;
+            var alarmUpdated = false;
+            var alarmRemoved = false;
+            var alarmStatusChanged = false;
+
+            this.service.AlarmAdded += (_, e) => alarmAdded = true;
+            this.service.AlarmUpdated += (_, e) => alarmUpdated = true;
+            this.service.AlarmRemoved += (_, e) => alarmRemoved = true;
+            this.service.AlarmStatusChanged += (_, e) => alarmStatusChanged = true;
+
+            this.repository.Remove(alarm);
+            this.TickTimer();
+
+            Assert.IsFalse(alarmAdded);
+            Assert.IsFalse(alarmUpdated);
+            Assert.IsTrue(alarmRemoved);
+            Assert.IsFalse(alarmStatusChanged);
+        }
+
+        [TestMethod]
+        public void Timer_WhenAlarmUpdatedInRepository_TriggersOnlyOneEvent()
+        {
+            var alarm = GetAlarm();
+            this.service.Add(alarm);
+            var alarmAdded = false;
+            var alarmUpdated = false;
+            var alarmRemoved = false;
+            var alarmStatusChanged = false;
+
+            this.service.AlarmAdded += (_, e) => alarmAdded = true;
+            this.service.AlarmUpdated += (_, e) => alarmUpdated = true;
+            this.service.AlarmRemoved += (_, e) => alarmRemoved = true;
+            this.service.AlarmStatusChanged += (_, e) => alarmStatusChanged = true;
+
+            alarm.Equals(alarm, true).Returns(false);
+            this.TickTimer();
+
+            Assert.IsFalse(alarmAdded);
+            Assert.IsTrue(alarmUpdated);
+            Assert.IsFalse(alarmRemoved);
+            Assert.IsFalse(alarmStatusChanged);
         }
     }
 }
