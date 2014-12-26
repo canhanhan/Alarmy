@@ -134,6 +134,26 @@ namespace Alarmy.Common
             }
         }
 
+        public bool Equals(IAlarm alarm, bool compareOnlyMetadata)
+        {
+            if (compareOnlyMetadata)
+                return this.Time.Equals(alarm.Title)
+                        && this.Title.Equals(alarm.Title)
+                        && this.IsHushed.Equals(alarm.IsHushed)
+                        && this.CancelReason.EndsWith(alarm.CancelReason);
+            else
+                return this.Equals(alarm);
+        }
+
+        public void Import(IAlarm alarm)
+        {
+            this.Status = alarm.Status;
+            this.Time = alarm.Time;
+            this.Title = alarm.Title;
+            this.IsHushed = alarm.IsHushed;
+            this.CancelReason = alarm.CancelReason;
+        }
+
         public override string ToString()
         {
             return string.Format("{0} ({1} - {2})", this.Title, this.Time.ToShortDateString(), this.Id.ToString("B"));

@@ -21,6 +21,8 @@ namespace Alarmy.Common
         bool CanBeMissed { get; }
         void Check();
 
+        bool Equals(IAlarm alarm, bool compareOnlyMetadata);
+        void Import(IAlarm alarm);
 #if DEBUG
         void SetStatusTest(AlarmStatus status);
 #endif
