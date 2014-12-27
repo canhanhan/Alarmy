@@ -29,8 +29,6 @@ namespace Alarmy.Common
 
         public AlarmStatus Status { get; set; }
 
-        public string CancelReason { get; set; }
-
         public DateTime Time { get; set; }
 
         public bool IsHushed { get; set; }
@@ -66,10 +64,9 @@ namespace Alarmy.Common
         }
 #endif
 
-        public void Cancel(string reason)
+        public void Cancel()
         {
             IsHushed = false;
-            CancelReason = reason;
             SetStatus(AlarmStatus.Cancelled);
         }
 
@@ -144,8 +141,7 @@ namespace Alarmy.Common
             if (compareOnlyMetadata)
                 return DateTime.Equals(this.Time, alarm.Time)
                         && string.Equals(this.Title, alarm.Title)
-                        && bool.Equals(this.IsHushed, alarm.IsHushed)
-                        && string.Equals(this.CancelReason, alarm.CancelReason);
+                        && bool.Equals(this.IsHushed, alarm.IsHushed);
             else
                 return this.Equals(alarm);
         }
@@ -156,7 +152,6 @@ namespace Alarmy.Common
             this.Time = alarm.Time;
             this.Title = alarm.Title;
             this.IsHushed = alarm.IsHushed;
-            this.CancelReason = alarm.CancelReason;
         }
 
         public override string ToString()

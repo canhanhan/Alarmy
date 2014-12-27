@@ -8,7 +8,6 @@ namespace Alarmy.Tests
     [TestClass]
     public class AlarmTests
     {
-        public const string ARBITRARY_TEST_REASON = "TEST";
         private readonly static DateTime SAMPLE_DATETIME = new DateTime(2014, 10, 10, 13, 05, 0);
         private IDateTimeProvider dateTimeProvider;
         private Alarm alarm;
@@ -26,7 +25,7 @@ namespace Alarmy.Tests
         {
             alarm.SetStatusTest(AlarmStatus.Set);
             
-            alarm.Cancel(ARBITRARY_TEST_REASON);
+            alarm.Cancel();
 
             Assert.AreEqual(AlarmStatus.Cancelled, alarm.Status);
         }

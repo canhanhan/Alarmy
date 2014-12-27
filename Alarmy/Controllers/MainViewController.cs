@@ -71,14 +71,14 @@ namespace Alarmy.Controllers
         }
 
         private void CheckForAlarmSound()
-        {               
+        {
             if (this.view.EnableSound && (!this.view.SmartAlarm || !this.smartAlarmController.IsSilent) && this.AnyRingingAlarms())
             {
                 if (!this.soundPlayer.IsPlaying)
                 {
                     Logger.Info("Alarm is ringing...");
                     this.soundPlayer.Play();
-                }
+                }                    
             }
             else
             {
@@ -86,7 +86,7 @@ namespace Alarmy.Controllers
                 {
                     Logger.Info("Alarm is not ringing...");
                     this.soundPlayer.Stop();
-                }
+                }                    
             }
         }
 
@@ -129,7 +129,7 @@ namespace Alarmy.Controllers
             }
             else
             {
-                Logger.Info("Sound is disabled.");                
+                Logger.Info("Sound is disabled.");
             }
 
             this.CheckForAlarmSound();
@@ -172,7 +172,7 @@ namespace Alarmy.Controllers
                 return;
             }
             Logger.InfoFormat("{0} is cancelled. Reason: {1}", alarm.ToString(), reason);
-            alarm.Cancel(reason);
+            alarm.Cancel();
             this.alarmService.Update(alarm);
         }
 

@@ -7,12 +7,11 @@ namespace Alarmy.Common
         Guid Id { get; set; }
         string Title { get; set; }
         AlarmStatus Status { get; }
-        string CancelReason { get; set; }
         DateTime Time { get; set; }
         bool IsWorthShowing { get; }
         bool IsHushed { get; set; }
         void Set(DateTime time);
-        void Cancel(string reason);
+        void Cancel();
         void Complete();
         bool CanBeCancelled { get; }
         bool CanBeCompleted { get; }

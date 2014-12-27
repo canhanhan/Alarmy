@@ -202,7 +202,6 @@ namespace Alarmy.Views
             alarmItem.SubItems[2].Text = AlarmStatusText(alarm);
             alarmItem.Tag = alarm;
             alarmItem.BackColor = GetColor(alarm);
-            alarmItem.ToolTipText = alarm.CancelReason;
         }
 
         private static Color GetColor(IAlarm alarm)
