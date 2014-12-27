@@ -94,6 +94,7 @@
     <Compile Include="Common\IAlarm.cs" />
     <Compile Include="Common\ISmartAlarmController.cs" />
     <Compile Include="Controllers\SmartAlarmController.cs" />
+    <Compile Include="Infrastructure\DatabasePathLayoutRenderer.cs" />
     <Compile Include="Infrastructure\Settings.cs" />
     <Compile Include="Infrastructure\SoundPlayer.cs" />
     <Compile Include="Infrastructure\WindsorInstaller.cs" />

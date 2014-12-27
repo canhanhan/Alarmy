@@ -14,6 +14,7 @@ namespace Alarmy
 #if !DEBUG
         private static Mutex mutex = new Mutex(true, "Local\\{AD1766D6-1245-4449-AD70-0C83CA39BB3C}");
 #endif
+        internal static IWindsorContainer Container;
 
         internal class MainFormContext : ApplicationContext
         {
@@ -33,11 +34,11 @@ namespace Alarmy
             if (mutex.WaitOne(TimeSpan.Zero, true))
             {
 #endif
-            var container = new WindsorContainer();
-            container.Install(FromAssembly.This());
+            Container = new WindsorContainer();
+            Container.Install(FromAssembly.This());
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(container.Resolve<MainFormContext>());
+            Application.Run(Container.Resolve<MainFormContext>());
 #if !DEBUG
                 mutex.ReleaseMutex();
             }
