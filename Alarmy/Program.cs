@@ -1,4 +1,5 @@
-﻿using Alarmy.Views;
+﻿using Alarmy.Controllers;
+using Alarmy.Views;
 using Castle.Windsor;
 using Castle.Windsor.Installer;
 using System;
@@ -13,6 +14,15 @@ namespace Alarmy
 #if !DEBUG
         private static Mutex mutex = new Mutex(true, "Local\\{AD1766D6-1245-4449-AD70-0C83CA39BB3C}");
 #endif
+
+        internal class MainFormContext : ApplicationContext
+        {
+            public MainFormContext(MainViewController controller, MainForm form) : base(form)
+            {
+                controller.Start();
+            }
+        }
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -27,7 +37,7 @@ namespace Alarmy
             container.Install(FromAssembly.This());
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(container.Resolve<MainForm>());
+            Application.Run(container.Resolve<MainFormContext>());
 #if !DEBUG
                 mutex.ReleaseMutex();
             }

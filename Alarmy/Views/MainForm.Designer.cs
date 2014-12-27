@@ -31,6 +31,9 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.listView1 = new System.Windows.Forms.ListView();
+            this.titleHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.timeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.statusHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.listViewContext = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.newAlarmToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
@@ -47,9 +50,6 @@
             this.cancelStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hushToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
-            this.titleHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.timeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.statusHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.listViewContext.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.itemContext.SuspendLayout();
@@ -75,6 +75,18 @@
             this.listView1.View = System.Windows.Forms.View.Details;
             this.listView1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseDown);
             // 
+            // titleHeader
+            // 
+            this.titleHeader.Text = "Title";
+            // 
+            // timeHeader
+            // 
+            this.timeHeader.Text = "Time";
+            // 
+            // statusHeader
+            // 
+            this.statusHeader.Text = "Status";
+            // 
             // listViewContext
             // 
             this.listViewContext.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -86,7 +98,7 @@
             this.toolStripMenuItem2,
             this.exitToolStripMenuItem});
             this.listViewContext.Name = "listViewContext";
-            this.listViewContext.Size = new System.Drawing.Size(162, 126);
+            this.listViewContext.Size = new System.Drawing.Size(162, 148);
             // 
             // newAlarmToolStripMenuItem
             // 
@@ -111,6 +123,7 @@
             // popupOnAlarmMenuItem
             // 
             this.popupOnAlarmMenuItem.Checked = true;
+            this.popupOnAlarmMenuItem.CheckOnClick = true;
             this.popupOnAlarmMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.popupOnAlarmMenuItem.Name = "popupOnAlarmMenuItem";
             this.popupOnAlarmMenuItem.Size = new System.Drawing.Size(161, 22);
@@ -212,18 +225,6 @@
             this.notifyIcon1.Text = "notifyIcon1";
             this.notifyIcon1.Visible = true;
             // 
-            // titleHeader
-            // 
-            this.titleHeader.Text = "Title";
-            // 
-            // timeHeader
-            // 
-            this.timeHeader.Text = "Time";
-            // 
-            // statusHeader
-            // 
-            this.statusHeader.Text = "Status";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -234,8 +235,8 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.Text = "AlarmsForm";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AlarmsForm_FormClosing);
-            this.Load += new System.EventHandler(this.AlarmsForm_Load);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.VisibleChanged += new System.EventHandler(this.MainForm_VisibleChanged);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.listViewContext.ResumeLayout(false);
@@ -245,7 +246,6 @@
             this.ResumeLayout(false);
 
         }
-
         #endregion
 
         private System.Windows.Forms.ListView listView1;

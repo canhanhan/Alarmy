@@ -1,4 +1,5 @@
 ﻿using Alarmy.Common;
+using Alarmy.Controllers;
 using Alarmy.Services;
 using Alarmy.Views;
 using Castle.Facilities.Logging;
@@ -38,7 +39,21 @@ namespace Alarmy.Infrastructure
                 .LifestyleSingleton()
             );
 
-            container.Register(Component.For<MainForm>());
+            container.Register(Component
+                .For<ISmartAlarmController>()
+                .ImplementedBy<SmartAlarmController>()
+                .LifestyleSingleton()
+            );
+
+            container.Register(Component
+                .For<IMainView, MainForm>()
+                .ImplementedBy<MainForm>()
+                .LifestyleSingleton()
+            );
+
+            container.Register(Component.For<MainViewController>().LifestyleSingleton());
+
+            container.Register(Component.For<Program.MainFormContext>().LifestyleSingleton());
         }
     }
 }

@@ -59,7 +59,7 @@ namespace Alarmy.Views
             }
         }
 
-        protected void RegisterBar()
+        protected void RegisterOrUnregisterBar()
         {
             if (fBarIsRegistering)
             {
@@ -87,6 +87,22 @@ namespace Alarmy.Views
             }
 
             fBarIsRegistering = false;
+        }
+
+        protected void RegisterBar()
+        {
+            if (!IsRegistered && !IsRegistering)
+            {
+                RegisterOrUnregisterBar();
+            }
+        }
+
+        protected void UnRegisterBar()
+        {
+            if (IsRegistered && !IsRegistering)
+            {
+                RegisterOrUnregisterBar();
+            }
         }
 
         private void ABSetPos()
@@ -206,7 +222,7 @@ namespace Alarmy.Views
                 if (!fBarRegistered)
                 {
                     Console.WriteLine("Register");
-                    RegisterBar();
+                    RegisterOrUnregisterBar();
                 }
                 else
                 {
@@ -219,7 +235,7 @@ namespace Alarmy.Views
                 if (fBarRegistered)
                 {
                     Console.WriteLine("Unregister");
-                    RegisterBar();
+                    RegisterOrUnregisterBar();
                 }
             }
         }

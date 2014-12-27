@@ -2,7 +2,7 @@
 
 namespace Alarmy.Infrastructure
 {
-    class SoundPlayer : IDisposable
+    internal class SoundPlayer : IDisposable
     {
         private readonly System.Media.SoundPlayer soundPlayer;
 
