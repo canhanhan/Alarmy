@@ -205,7 +205,7 @@ namespace Alarmy.Controllers
         {
             if (this.view.Visible)
             {
-                Logger.Info("List is hid.");
+                Logger.Info("List is hidden.");
                 this.view.Hide();
             }
             else

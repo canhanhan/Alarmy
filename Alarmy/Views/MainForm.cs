@@ -383,6 +383,15 @@ namespace Alarmy.Views
 
             if (this.OnEnableSoundChange != null)
                 this.OnEnableSoundChange.Invoke(this, null);
+
+            if (soundToolStripMenuItem.Checked)
+            {
+                this.label1.Text = "Alarmy";
+            }
+            else
+            {
+                this.label1.Text = "Alarmy (Muted)";
+            }
         }
 
         private void popupOnAlarmMenuItem_CheckedChanged(object sender, EventArgs e)

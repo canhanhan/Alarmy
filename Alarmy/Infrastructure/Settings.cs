@@ -21,7 +21,7 @@ namespace Alarmy.Infrastructure
             this.AlarmSoundFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "alarm.wav");
             this.CheckInterval = 1000;
             this.EnableSound = true;
-            this.PopupOnAlarm = false;
+            this.PopupOnAlarm = true;
             this.SmartAlarm = true;
             this.StartHidden = false;
             this.AlarmListGroupInterval = 15;
@@ -29,11 +29,11 @@ namespace Alarmy.Infrastructure
 
             new OptionSet()
             {
-                { "a|alarmsound=", x => this.AlarmSoundFile = x },
-                { "c|checkinterval=", x => this.CheckInterval = double.Parse(x)},
+                { "a|alarmSound=", x => this.AlarmSoundFile = x },
+                { "c|checkInterval=", x => this.CheckInterval = double.Parse(x)},
                 { "m|mute", x => this.EnableSound = false },
-                { "p|popupOnalarm", x => this.PopupOnAlarm = true },
-                { "s|smartalarm", x => this.SmartAlarm = false },
+                { "np|dontPopup", x => this.PopupOnAlarm = false },
+                { "ns|noSmartAlarm", x => this.SmartAlarm = false },
                 { "h|hidden", x => this.StartHidden = true },
                 { "g|alarmListGroupInterval=", x => this.AlarmListGroupInterval = int.Parse(x)},
                 { "db|database=", x => this.AlarmDatabasePath = x }

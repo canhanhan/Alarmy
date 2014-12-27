@@ -39,6 +39,7 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.soundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.popupOnAlarmMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.smartAlarmStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -50,7 +51,6 @@
             this.cancelStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hushToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
-            this.smartAlarmStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listViewContext.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.itemContext.SuspendLayout();
@@ -116,7 +116,9 @@
             // 
             // soundToolStripMenuItem
             // 
+            this.soundToolStripMenuItem.Checked = true;
             this.soundToolStripMenuItem.CheckOnClick = true;
+            this.soundToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.soundToolStripMenuItem.Name = "soundToolStripMenuItem";
             this.soundToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
             this.soundToolStripMenuItem.Text = "&Sound";
@@ -131,6 +133,16 @@
             this.popupOnAlarmMenuItem.Size = new System.Drawing.Size(161, 22);
             this.popupOnAlarmMenuItem.Text = "&Popup on Alarm";
             this.popupOnAlarmMenuItem.CheckedChanged += new System.EventHandler(this.popupOnAlarmMenuItem_CheckedChanged);
+            // 
+            // smartAlarmStripMenuItem
+            // 
+            this.smartAlarmStripMenuItem.Checked = true;
+            this.smartAlarmStripMenuItem.CheckOnClick = true;
+            this.smartAlarmStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.smartAlarmStripMenuItem.Name = "smartAlarmStripMenuItem";
+            this.smartAlarmStripMenuItem.Size = new System.Drawing.Size(161, 22);
+            this.smartAlarmStripMenuItem.Text = "Smart Alarm";
+            this.smartAlarmStripMenuItem.CheckedChanged += new System.EventHandler(this.smartAlarmStripMenuItem_CheckedChanged);
             // 
             // hideToolStripMenuItem
             // 
@@ -226,16 +238,6 @@
             this.notifyIcon1.ContextMenuStrip = this.listViewContext;
             this.notifyIcon1.Text = "notifyIcon1";
             this.notifyIcon1.Visible = true;
-            // 
-            // smartAlarmStripMenuItem
-            // 
-            this.smartAlarmStripMenuItem.Checked = true;
-            this.smartAlarmStripMenuItem.CheckOnClick = true;
-            this.smartAlarmStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.smartAlarmStripMenuItem.Name = "smartAlarmStripMenuItem";
-            this.smartAlarmStripMenuItem.Size = new System.Drawing.Size(161, 22);
-            this.smartAlarmStripMenuItem.Text = "Smart Alarm";
-            this.smartAlarmStripMenuItem.CheckedChanged += new System.EventHandler(this.smartAlarmStripMenuItem_CheckedChanged);
             // 
             // MainForm
             // 
