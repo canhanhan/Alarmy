@@ -46,7 +46,7 @@ namespace Alarmy.Controllers
             this.view.OnSmartAlarmChange += view_OnSmartAlarmChange;
 
             this.settings = settings;
-
+ 
             this.alarmService = alarmService;
             this.alarmService.Interval = settings.CheckInterval;
             this.alarmService.AlarmAdded += alarmService_AlarmAdded;
@@ -217,13 +217,15 @@ namespace Alarmy.Controllers
 
         private void view_Load(object sender, EventArgs e)
         {
+            this.view.PopupOnAlarm = this.settings.PopupOnAlarm;
             this.view.EnableSound = this.settings.EnableSound;
-            this.view.PopupOnAlarm = !this.settings.DontPopup;
-
+            this.view.SmartAlarm = this.settings.SmartAlarm;
+             
             if (this.settings.StartHidden)
             {
                 this.view.Hide();
             }
+
             this.alarmService.Start();
         }
 
