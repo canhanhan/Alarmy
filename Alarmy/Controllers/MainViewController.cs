@@ -31,6 +31,8 @@ namespace Alarmy.Controllers
 
         public MainViewController(IMainView view, IAlarmService alarmService, ISmartAlarmController smartAlarmController, Settings settings)
         {
+            Logger.Info("Started with settings: " + settings.ToString());
+
             this.view = view;
             this.view.OnLoad += view_Load;
             this.view.OnClosing += view_Closing;
@@ -69,16 +71,22 @@ namespace Alarmy.Controllers
         }
 
         private void CheckForAlarmSound()
-        {
+        {               
             if (this.view.EnableSound && (!this.view.SmartAlarm || !this.smartAlarmController.IsSilent) && this.AnyRingingAlarms())
             {
                 if (!this.soundPlayer.IsPlaying)
+                {
+                    Logger.Info("Alarm is ringing...");
                     this.soundPlayer.Play();
+                }
             }
             else
             {
                 if (this.soundPlayer.IsPlaying)
+                {
+                    Logger.Info("Alarm is not ringing...");
                     this.soundPlayer.Stop();
+                }
             }
         }
 
@@ -121,12 +129,10 @@ namespace Alarmy.Controllers
             }
             else
             {
-                Logger.Info("Sound is disabled.");
-                if (this.soundPlayer.IsPlaying)
-                {
-                    this.soundPlayer.Stop();
-                }
+                Logger.Info("Sound is disabled.");                
             }
+
+            this.CheckForAlarmSound();
         }
 
         private void view_OnNewRequest(object sender, EventArgs e)
@@ -231,6 +237,7 @@ namespace Alarmy.Controllers
 
         private void view_Closing(object sender, EventArgs e)
         {
+            Logger.Info("Closing...");
             this.alarmService.Stop();
         }
         #endregion
@@ -273,15 +280,15 @@ namespace Alarmy.Controllers
 
         private void smartAlarmController_OnWakeup(object sender, EventArgs e)
         {
+            Logger.Info("Smart Alarm sent wakeup");
             this.alarmService.Start();
         }
 
         private void smartAlarmController_OnSleep(object sender, EventArgs e)
         {
+            Logger.Info("Smart Alarm sent sleep");
             this.alarmService.Stop();
         }
         #endregion
-
-
     }
 }
