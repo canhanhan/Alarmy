@@ -43,6 +43,7 @@ namespace Alarmy.Controllers
             this.view.OnNewRequest += view_OnNewRequest;
             this.view.OnEnableSoundChange += view_OnEnableSoundChange;
             this.view.OnPopupOnAlarmChange += view_OnPopupOnAlarmChange;
+            this.view.OnSmartAlarmChange += view_OnSmartAlarmChange;
 
             this.settings = settings;
 
@@ -62,21 +63,6 @@ namespace Alarmy.Controllers
             this.smartAlarmController.OnSoundOff += smartAlarmController_OnSound;
         }
 
-        private void smartAlarmController_OnSound(object sender, EventArgs e)
-        {
-            this.CheckForAlarmSound();
-        }
-
-        private void smartAlarmController_OnWakeup(object sender, EventArgs e)
-        {
-            this.alarmService.Start();
-        }
-
-        private void smartAlarmController_OnSleep(object sender, EventArgs e)
-        {
-            this.alarmService.Stop();
-        }
-
         public void Start()
         {
             this.view.Show();
@@ -84,19 +70,15 @@ namespace Alarmy.Controllers
 
         private void CheckForAlarmSound()
         {
-            if (this.view.EnableSound && !this.smartAlarmController.IsSilent && this.AnyRingingAlarms())
+            if (this.view.EnableSound && (!this.view.SmartAlarm || !this.smartAlarmController.IsSilent) && this.AnyRingingAlarms())
             {
                 if (!this.soundPlayer.IsPlaying)
-                {
                     this.soundPlayer.Play();
-                }
             }
             else
             {
                 if (this.soundPlayer.IsPlaying)
-                {
                     this.soundPlayer.Stop();
-                }
             }
         }
 
@@ -106,6 +88,18 @@ namespace Alarmy.Controllers
             return alarms.Any(x => x.Status == AlarmStatus.Ringing && !x.IsHushed);
         }
 
+        #region View Events
+        private void view_OnSmartAlarmChange(object sender, EventArgs e)
+        {
+            if (this.view.SmartAlarm)
+            {
+                Logger.Info("Smart alarm is enabled.");
+            }
+            else
+            {
+                Logger.Info("Smart alarm is disabled");
+            }
+        }
 
         private void view_OnPopupOnAlarmChange(object sender, EventArgs e)
         {
@@ -237,9 +231,9 @@ namespace Alarmy.Controllers
         {
             this.alarmService.Stop();
         }
+        #endregion
 
-
-
+        #region Alarm service Events
         private void alarmService_AlarmUpdated(object sender, AlarmEventArgs e)
         {
             this.view.UpdateAlarm(e.Alarm);
@@ -267,5 +261,25 @@ namespace Alarmy.Controllers
 
             this.alarmService_AlarmUpdated(this, new AlarmEventArgs(e.Alarm));
         }
+        #endregion
+
+        #region SmartAlarm Events
+        private void smartAlarmController_OnSound(object sender, EventArgs e)
+        {
+            this.CheckForAlarmSound();
+        }
+
+        private void smartAlarmController_OnWakeup(object sender, EventArgs e)
+        {
+            this.alarmService.Start();
+        }
+
+        private void smartAlarmController_OnSleep(object sender, EventArgs e)
+        {
+            this.alarmService.Stop();
+        }
+        #endregion
+
+
     }
 }

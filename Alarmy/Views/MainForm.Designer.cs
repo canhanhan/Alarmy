@@ -50,6 +50,7 @@
             this.cancelStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hushToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
+            this.smartAlarmStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listViewContext.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.itemContext.SuspendLayout();
@@ -94,11 +95,12 @@
             this.toolStripMenuItem1,
             this.soundToolStripMenuItem,
             this.popupOnAlarmMenuItem,
+            this.smartAlarmStripMenuItem,
             this.hideToolStripMenuItem,
             this.toolStripMenuItem2,
             this.exitToolStripMenuItem});
             this.listViewContext.Name = "listViewContext";
-            this.listViewContext.Size = new System.Drawing.Size(162, 148);
+            this.listViewContext.Size = new System.Drawing.Size(162, 170);
             // 
             // newAlarmToolStripMenuItem
             // 
@@ -225,6 +227,16 @@
             this.notifyIcon1.Text = "notifyIcon1";
             this.notifyIcon1.Visible = true;
             // 
+            // smartAlarmStripMenuItem
+            // 
+            this.smartAlarmStripMenuItem.Checked = true;
+            this.smartAlarmStripMenuItem.CheckOnClick = true;
+            this.smartAlarmStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.smartAlarmStripMenuItem.Name = "smartAlarmStripMenuItem";
+            this.smartAlarmStripMenuItem.Size = new System.Drawing.Size(161, 22);
+            this.smartAlarmStripMenuItem.Text = "Smart Alarm";
+            this.smartAlarmStripMenuItem.CheckedChanged += new System.EventHandler(this.smartAlarmStripMenuItem_CheckedChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -268,5 +280,6 @@
         private System.Windows.Forms.ColumnHeader titleHeader;
         private System.Windows.Forms.ColumnHeader timeHeader;
         private System.Windows.Forms.ColumnHeader statusHeader;
+        private System.Windows.Forms.ToolStripMenuItem smartAlarmStripMenuItem;
     }
 }

@@ -7,17 +7,19 @@ namespace Alarmy.Common
         event EventHandler<AlarmEventArgs> OnCancelRequest;
         event EventHandler<AlarmEventArgs> OnChangeRequest;
         event EventHandler<AlarmEventArgs> OnCompleteRequest;
-        event EventHandler OnEnableSoundChange;
-        event EventHandler OnExitRequest;
-        event EventHandler OnHideRequest;
         event EventHandler<AlarmEventArgs> OnHushRequest;
         event EventHandler OnNewRequest;
+        event EventHandler OnEnableSoundChange;
         event EventHandler OnPopupOnAlarmChange;
+        event EventHandler OnSmartAlarmChange;
+        event EventHandler OnHideRequest;
+        event EventHandler OnExitRequest;
         event EventHandler OnLoad;
         event EventHandler OnClosing;
 
         bool EnableSound { get; set; }
         bool PopupOnAlarm { get; set; }
+        bool SmartAlarm { get; set; }        
         bool Visible { get; set; }
 
         void Show();

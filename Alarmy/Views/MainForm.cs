@@ -22,6 +22,7 @@ namespace Alarmy.Views
         public event EventHandler OnNewRequest;
         public event EventHandler OnEnableSoundChange;
         public event EventHandler OnPopupOnAlarmChange;
+        public event EventHandler OnSmartAlarmChange;
 
         public MainForm(Settings settings)
         {
@@ -54,6 +55,18 @@ namespace Alarmy.Views
             set
             {
                 this.popupOnAlarmMenuItem.Checked = value;
+            }
+        }
+
+        public bool SmartAlarm
+        {
+            get
+            {
+                return this.smartAlarmStripMenuItem.Checked;
+            }
+            set
+            {
+                this.smartAlarmStripMenuItem.Checked = value;
             }
         }
 
@@ -384,6 +397,12 @@ namespace Alarmy.Views
 
             if (this.OnPopupOnAlarmChange != null)
                 this.OnPopupOnAlarmChange.Invoke(this, null);
+        }
+
+        private void smartAlarmStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            if (this.OnSmartAlarmChange != null)
+                this.OnSmartAlarmChange.Invoke(this, null);
         }
         #endregion
 
