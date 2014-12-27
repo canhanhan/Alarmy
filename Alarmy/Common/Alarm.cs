@@ -142,10 +142,10 @@ namespace Alarmy.Common
         public bool Equals(IAlarm alarm, bool compareOnlyMetadata)
         {
             if (compareOnlyMetadata)
-                return this.Time.Equals(alarm.Time)
-                        && this.Title.Equals(alarm.Title)
-                        && this.IsHushed.Equals(alarm.IsHushed)
-                        && this.CancelReason.EndsWith(alarm.CancelReason);
+                return DateTime.Equals(this.Time, alarm.Time)
+                        && string.Equals(this.Title, alarm.Title)
+                        && bool.Equals(this.IsHushed, alarm.IsHushed)
+                        && string.Equals(this.CancelReason, alarm.CancelReason);
             else
                 return this.Equals(alarm);
         }
