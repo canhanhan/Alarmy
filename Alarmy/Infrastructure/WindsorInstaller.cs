@@ -17,7 +17,8 @@ namespace Alarmy.Infrastructure
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
             NLog.Config.ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("databasePath", typeof(DatabasePathLayoutRenderer));
-
+            container.AddFacility<LoggingFacility>(f => f.UseNLog().WithAppConfig());
+            
             container.Register(Component.For<Settings>());
 
             container.Register(Component

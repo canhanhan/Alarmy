@@ -31,8 +31,6 @@ namespace Alarmy.Controllers
 
         public MainViewController(IMainView view, IAlarmService alarmService, ISmartAlarmController smartAlarmController, Settings settings)
         {
-            Logger.Info("Started with settings: " + settings.ToString());
-
             this.view = view;
             this.view.OnLoad += view_Load;
             this.view.OnClosing += view_Closing;
@@ -67,6 +65,8 @@ namespace Alarmy.Controllers
 
         public void Start()
         {
+            Logger.Info("Started with settings: " + this.settings.ToString());
+
             this.view.Show();
         }
 

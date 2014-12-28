@@ -1,5 +1,6 @@
 ﻿using NLog;
 using NLog.LayoutRenderers;
+using System.IO;
 using System.Text;
 
 namespace Alarmy.Infrastructure
@@ -9,7 +10,7 @@ namespace Alarmy.Infrastructure
     {
         protected override void Append(StringBuilder builder, LogEventInfo logEvent)
         {
-            builder.Append(Program.Container.Resolve<Settings>().AlarmDatabasePath);
+            builder.Append(Path.GetDirectoryName(Program.Container.Resolve<Settings>().AlarmDatabasePath));
         }
     }
 }

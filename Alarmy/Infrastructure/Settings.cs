@@ -39,5 +39,11 @@ namespace Alarmy.Infrastructure
                 { "db|database=", x => this.AlarmDatabasePath = x }
             }.Parse(Environment.GetCommandLineArgs().Skip(1));
         }
+
+        public override string ToString()
+        {
+            return string.Format("alarmSoundFile={0};checkInterval={1};enableSound={2};popupOnAlarm={3};smartAlarm={4};alarmListGroupInterval={5};alarmDatabasePath={6}",
+                this.AlarmSoundFile, this.CheckInterval, this.EnableSound, this.PopupOnAlarm, this.SmartAlarm, this.AlarmListGroupInterval, this.AlarmDatabasePath);
+        }
     }
 }
