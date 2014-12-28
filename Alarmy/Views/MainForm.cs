@@ -161,23 +161,36 @@ namespace Alarmy.Views
         {
             this.listView1.BeginUpdate();
 
-            this.listView1.Items.Cast<ListViewItem>()
+            var grouppedItems = this.listView1.Items.Cast<ListViewItem>()
                 .OrderBy(x => ((IAlarm)x.Tag).Time)
-                .GroupBy(x => ((IAlarm)x.Tag).Time.RoundUp(TimeSpan.FromMinutes(alarmListGroupInterval)))
-                .ToList().ForEach(groups =>
+                .GroupBy(x => ((IAlarm)x.Tag).Time.RoundUp(TimeSpan.FromMinutes(alarmListGroupInterval))).ToArray();
+
+            for (var key = 0; key < grouppedItems.Length; key++)
             {
-                var key = groups.Key.ToString();
-                var title = String.Format("{0}-{1}", groups.Key.AddMinutes(-alarmListGroupInterval).ToShortTimeString(), groups.Key.ToShortTimeString());
-
-                var group = this.listView1.Groups[key];
-                if (group == null)
-                {
-                    group = new ListViewGroup(key, title);
-                    this.listView1.Groups.Add(group);
+                var group = grouppedItems[key];
+                var begining = group.Key.AddMinutes(-alarmListGroupInterval);
+                string title;
+                if (begining.Date == DateTime.Today) {
+                    title = begining.ToShortTimeString();
+                } else {
+                    title = string.Format("{0} {1}", begining.ToShortDateString(), begining.ToShortTimeString());
                 }
+                title += " - " + group.Key.ToShortTimeString();
 
-                groups.ToList().ForEach(item => item.Group = group);
-            });
+                ListViewGroup listViewGroup;
+                if (listView1.Groups.Count >= key)
+                {
+                    listViewGroup = new ListViewGroup(title);
+                    this.listView1.Groups.Add(listViewGroup);
+                }
+                else
+                {
+                    listViewGroup = this.listView1.Groups[key];
+                    listViewGroup.Header = title;
+                }
+                listViewGroup.Items.Cast<ListViewItem>().ToList().ForEach(x => x.Group = null);
+                group.ToList().ForEach(item => item.Group = listViewGroup);
+            }
 
             this.listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             this.listView1.EndUpdate();

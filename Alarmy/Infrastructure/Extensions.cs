@@ -14,7 +14,7 @@ namespace Alarmy
         // http://stackoverflow.com/a/7029464
         public static DateTime RoundUp(this DateTime dt, TimeSpan d)
         {
-            return new DateTime(((dt.Ticks + d.Ticks - 1) / d.Ticks) * d.Ticks);
+            return new DateTime(((dt.Ticks + d.Ticks) / d.Ticks) * d.Ticks);
         }
 
         // http://stackoverflow.com/a/15268338
