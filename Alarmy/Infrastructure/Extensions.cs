@@ -12,14 +12,17 @@ namespace Alarmy
         }
 
         // http://stackoverflow.com/a/7029464
-        public static DateTime RoundUp(this DateTime dt, TimeSpan d)
+        public static DateTime Roundup(this DateTime dateTime, TimeSpan roundingValue)
         {
-            return new DateTime(((dt.Ticks + d.Ticks) / d.Ticks) * d.Ticks);
+            return new DateTime(((dateTime.Ticks + roundingValue.Ticks) / roundingValue.Ticks) * roundingValue.Ticks);
         }
 
         // http://stackoverflow.com/a/15268338
         public static void DoubleBuffered(this Control control, bool enable)
         {
+            if (control == null)
+                throw new ArgumentNullException("control");
+
             var doubleBufferPropertyInfo = control.GetType().GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
             doubleBufferPropertyInfo.SetValue(control, enable, null);
         }

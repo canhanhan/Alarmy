@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Resources;
+using System;
 
 
 
@@ -8,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Alarmy")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Can Hanhan")]
 [assembly: AssemblyProduct("Alarmy")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
@@ -36,3 +38,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 [assembly: InternalsVisibleTo("Alarmy.Tests")]
+[assembly: NeutralResourcesLanguageAttribute("en-US")]
+
+
+[assembly: CLSCompliant(true)]

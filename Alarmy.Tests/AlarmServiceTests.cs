@@ -36,7 +36,7 @@ namespace Alarmy.Tests
             this.repository = new InMemoryAlarmRepository();
             this.timer = Substitute.For<ITimer>();
             this.service = new AlarmService(this.repository, timer);
-            this.service.Start();
+            this.service.StartTimer();
         }
 
         [TestMethod]

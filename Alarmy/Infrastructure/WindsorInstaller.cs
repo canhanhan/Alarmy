@@ -14,6 +14,7 @@ namespace Alarmy.Infrastructure
 {
     public class WindsorInstaller : IWindsorInstaller
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
             NLog.Config.ConfigurationItemFactory.Default.LayoutRenderers.RegisterDefinition("databasePath", typeof(DatabasePathLayoutRenderer));

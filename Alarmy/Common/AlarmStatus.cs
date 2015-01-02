@@ -6,6 +6,6 @@
         Ringing,
         Missed,
         Completed,
-        Cancelled
+        Canceled
     }
 }

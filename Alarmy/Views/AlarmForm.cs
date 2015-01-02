@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Alarmy.Properties;
+using System;
 using System.Windows.Forms;
 
 namespace Alarmy.Views
@@ -11,7 +12,7 @@ namespace Alarmy.Views
 
             timeAlarmTime.MinDate = DateTime.Today;
             timeAlarmTime.Format = DateTimePickerFormat.Custom;
-            timeAlarmTime.CustomFormat = "dd.MM.yyyy HH:mm";
+            timeAlarmTime.CustomFormat = Settings.Default.DatePickerFormat;
         }
 
         private void cancelButton_Click(object sender, EventArgs e)

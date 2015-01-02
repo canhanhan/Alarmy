@@ -2,12 +2,13 @@ using Alarmy.Common;
 using Alarmy.Infrastructure;
 using Castle.Core.Logging;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 
 namespace Alarmy.Controllers
 {
-    internal class MainViewController
+    internal class MainViewController :IDisposable
     {
         private readonly ISmartAlarmController smartAlarmController;
         private readonly SoundPlayer soundPlayer;
@@ -68,6 +69,12 @@ namespace Alarmy.Controllers
             Logger.Info("Started with settings: " + this.settings.ToString());
 
             this.view.Show();
+        }
+
+        public void Dispose()
+        {
+            if (this.soundPlayer != null)
+                this.soundPlayer.Dispose();
         }
 
         private void CheckForAlarmSound()
@@ -143,7 +150,7 @@ namespace Alarmy.Controllers
                 return;
             }
             var alarm = new Alarm() { Title = metadata.Title };
-            alarm.Set(metadata.Time);
+            alarm.SetTime(metadata.Time);
 
             Logger.Info(alarm.ToString() + " is created");
             this.alarmService.Add(alarm);
@@ -157,9 +164,9 @@ namespace Alarmy.Controllers
             {
                 return;
             }
-            Logger.InfoFormat("{0} is changed. New time: {1}, New title: {2}", alarm.ToString(), metadata.Title, metadata.Time);
+            Logger.InfoFormat(CultureInfo.InvariantCulture, "{0} is changed. New time: {1}, New title: {2}", alarm.ToString(), metadata.Title, metadata.Time);
             alarm.Title = metadata.Title;
-            alarm.Set(metadata.Time);
+            alarm.SetTime(metadata.Time);
             this.alarmService.Update(alarm);
         }
 
@@ -171,7 +178,7 @@ namespace Alarmy.Controllers
             {
                 return;
             }
-            Logger.InfoFormat("{0} is cancelled. Reason: {1}", alarm.ToString(), reason);
+            Logger.InfoFormat(CultureInfo.InvariantCulture, "{0} is cancelled. Reason: {1}", alarm.ToString(), reason);
             alarm.Cancel();
             this.alarmService.Update(alarm);
         }
@@ -232,13 +239,13 @@ namespace Alarmy.Controllers
                 this.view.Hide();
             }
 
-            this.alarmService.Start();
+            this.alarmService.StartTimer();
         }
 
         private void view_Closing(object sender, EventArgs e)
         {
             Logger.Info("Closing...");
-            this.alarmService.Stop();
+            this.alarmService.StopTimer();
         }
         #endregion
 
@@ -281,13 +288,13 @@ namespace Alarmy.Controllers
         private void smartAlarmController_OnWakeup(object sender, EventArgs e)
         {
             Logger.Info("Smart Alarm sent wakeup");
-            this.alarmService.Start();
+            this.alarmService.StartTimer();
         }
 
         private void smartAlarmController_OnSleep(object sender, EventArgs e)
         {
             Logger.Info("Smart Alarm sent sleep");
-            this.alarmService.Stop();
+            this.alarmService.StopTimer();
         }
         #endregion
     }

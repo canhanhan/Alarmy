@@ -10,10 +10,10 @@ namespace Alarmy.Common
         DateTime Time { get; set; }
         bool IsWorthShowing { get; }
         bool IsHushed { get; set; }
-        void Set(DateTime time);
+        void SetTime(DateTime time);
         void Cancel();
         void Complete();
-        bool CanBeCancelled { get; }
+        bool CanBeCanceled { get; }
         bool CanBeCompleted { get; }
         bool CanBeRinging { get; }
         bool CanBeSet { get; }

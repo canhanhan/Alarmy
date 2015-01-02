@@ -27,7 +27,7 @@ namespace Alarmy.Tests
             
             alarm.Cancel();
 
-            Assert.AreEqual(AlarmStatus.Cancelled, alarm.Status);
+            Assert.AreEqual(AlarmStatus.Canceled, alarm.Status);
         }
 
         [TestMethod]
@@ -83,8 +83,8 @@ namespace Alarmy.Tests
         {
             alarm.SetStatusTest(AlarmStatus.Ringing);
 
-            alarm.SetStatus(AlarmStatus.Cancelled);
-            Assert.AreEqual(AlarmStatus.Cancelled, alarm.Status);
+            alarm.SetStatus(AlarmStatus.Canceled);
+            Assert.AreEqual(AlarmStatus.Canceled, alarm.Status);
         }
 
         [TestMethod]
@@ -102,7 +102,7 @@ namespace Alarmy.Tests
         [ExpectedException(typeof(InvalidStateException))]
         public void Alarm_WhenCancelled_CannotBeCompleted()
         {
-            alarm.SetStatusTest(AlarmStatus.Cancelled);
+            alarm.SetStatusTest(AlarmStatus.Canceled);
 
             alarm.SetStatus(AlarmStatus.Completed);
         }
@@ -111,7 +111,7 @@ namespace Alarmy.Tests
         [ExpectedException(typeof(InvalidStateException))]
         public void Alarm_WhenCancelled_CannotBeRinging()
         {
-            alarm.SetStatusTest(AlarmStatus.Cancelled);
+            alarm.SetStatusTest(AlarmStatus.Canceled);
 
             alarm.SetStatus(AlarmStatus.Ringing);
         }
@@ -119,7 +119,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenCancelled_CanBeSet()
         {
-            alarm.SetStatusTest(AlarmStatus.Cancelled);
+            alarm.SetStatusTest(AlarmStatus.Canceled);
 
             alarm.SetStatus(AlarmStatus.Set);
 
@@ -130,7 +130,7 @@ namespace Alarmy.Tests
         [ExpectedException(typeof(InvalidStateException))]
         public void Alarm_WhenCancelled_CannotBeMissed()
         {
-            alarm.SetStatusTest(AlarmStatus.Cancelled);
+            alarm.SetStatusTest(AlarmStatus.Canceled);
 
             alarm.SetStatus(AlarmStatus.Missed);
         }
@@ -162,7 +162,7 @@ namespace Alarmy.Tests
         {
             alarm.SetStatusTest(AlarmStatus.Completed);
 
-            alarm.SetStatus(AlarmStatus.Cancelled);
+            alarm.SetStatus(AlarmStatus.Canceled);
         }
 
         [TestMethod]
@@ -190,8 +190,8 @@ namespace Alarmy.Tests
         {
             alarm.SetStatusTest(AlarmStatus.Missed);
 
-            alarm.SetStatus(AlarmStatus.Cancelled);
-            Assert.AreEqual(AlarmStatus.Cancelled, alarm.Status);
+            alarm.SetStatus(AlarmStatus.Canceled);
+            Assert.AreEqual(AlarmStatus.Canceled, alarm.Status);
         }
 
         [TestMethod]
@@ -217,7 +217,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Time_WhenSet_ChangesRingTime()
         {
-            this.alarm.Set(SAMPLE_DATETIME);
+            this.alarm.SetTime(SAMPLE_DATETIME);
 
             Assert.AreEqual(SAMPLE_DATETIME, this.alarm.Time);
         }
@@ -226,7 +226,7 @@ namespace Alarmy.Tests
         public void Time_WhenSet_ChangesAlarmStatus()
         {
             this.alarm.Status = AlarmStatus.Ringing;
-            this.alarm.Set(SAMPLE_DATETIME);
+            this.alarm.SetTime(SAMPLE_DATETIME);
 
             Assert.AreEqual(AlarmStatus.Set, this.alarm.Status);
         }
@@ -235,7 +235,7 @@ namespace Alarmy.Tests
         public void Time_WhenSet_ChangesHush()
         {
             this.alarm.IsHushed = true; ;
-            this.alarm.Set(SAMPLE_DATETIME);
+            this.alarm.SetTime(SAMPLE_DATETIME);
 
             Assert.IsFalse(this.alarm.IsHushed);
         }
@@ -267,7 +267,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Check_BeforeAlarm_DoesNothing()
         {
-            this.alarm.Set(SAMPLE_DATETIME);
+            this.alarm.SetTime(SAMPLE_DATETIME);
             this.dateTimeProvider.Now.Returns(SAMPLE_DATETIME.AddMinutes(-5));
 
             this.alarm.CheckStatusChange();
@@ -278,7 +278,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Check_DuringAlarm_SetsStatusToRinging()
         {
-            this.alarm.Set(SAMPLE_DATETIME);
+            this.alarm.SetTime(SAMPLE_DATETIME);
             this.dateTimeProvider.Now.Returns(SAMPLE_DATETIME);
 
             this.alarm.CheckStatusChange();
@@ -289,7 +289,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Check_AfterAlarm_SetsStatusToMissed()
         {
-            this.alarm.Set(SAMPLE_DATETIME);
+            this.alarm.SetTime(SAMPLE_DATETIME);
             this.dateTimeProvider.Now.Returns(SAMPLE_DATETIME.AddMinutes(5));
 
             this.alarm.CheckStatusChange();
@@ -300,7 +300,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Check_WhenCompleted_DoesNothing()
         {
-            this.alarm.Set(SAMPLE_DATETIME);
+            this.alarm.SetTime(SAMPLE_DATETIME);
             this.dateTimeProvider.Now.Returns(SAMPLE_DATETIME.AddMinutes(-5));
             this.alarm.Status = AlarmStatus.Completed;
 
@@ -338,7 +338,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void IsWorthShowing_WhenCancelledAndNotFresh_ReturnsFalse()
         {
-            this.TestIsWorthShowing(AlarmStatus.Cancelled, isFresh: false, expectSuccess: false);
+            this.TestIsWorthShowing(AlarmStatus.Canceled, isFresh: false, expectSuccess: false);
         }
 
         [TestMethod]
@@ -368,14 +368,14 @@ namespace Alarmy.Tests
         [TestMethod]
         public void IsWorthShowing_WhenCancelledAndFresh_ReturnsTrue()
         {
-            this.TestIsWorthShowing(AlarmStatus.Cancelled, isFresh: true, expectSuccess: true);
+            this.TestIsWorthShowing(AlarmStatus.Canceled, isFresh: true, expectSuccess: true);
         }
         #endregion
 
         private void TestIsWorthShowing(AlarmStatus status, bool isFresh, bool expectSuccess) 
         {
             dateTimeProvider.Now.Returns(SAMPLE_DATETIME);
-            alarm.Set(isFresh ? SAMPLE_DATETIME : SAMPLE_DATETIME.AddMinutes(-(Alarm.ISWORTHSHOWING_FRESNESS+1)));
+            alarm.SetTime(isFresh ? SAMPLE_DATETIME : SAMPLE_DATETIME.AddMinutes(-(Alarm.IsWorthShowingFreshness+1)));
             alarm.SetStatusTest(status);
 
             Assert.AreEqual(expectSuccess, alarm.IsWorthShowing);

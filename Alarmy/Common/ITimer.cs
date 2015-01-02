@@ -6,7 +6,7 @@ namespace Alarmy.Common
     {
         event EventHandler Elapsed;
         double Interval { get; set; }
-        void Start();
-        void Stop();
+        void StartTimer();
+        void StopTimer();
     }
 }

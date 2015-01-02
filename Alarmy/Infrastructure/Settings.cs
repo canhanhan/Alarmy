@@ -1,5 +1,6 @@
 ﻿using NDesk.Options;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -30,19 +31,19 @@ namespace Alarmy.Infrastructure
             new OptionSet()
             {
                 { "a|alarmSound=", x => this.AlarmSoundFile = x },
-                { "c|checkInterval=", x => this.CheckInterval = double.Parse(x)},
+                { "c|checkInterval=", x => this.CheckInterval = double.Parse(x, CultureInfo.InvariantCulture)},
                 { "m|mute", x => this.EnableSound = false },
                 { "np|dontPopup", x => this.PopupOnAlarm = false },
                 { "ns|noSmartAlarm", x => this.SmartAlarm = false },
                 { "h|hidden", x => this.StartHidden = true },
-                { "g|alarmListGroupInterval=", x => this.AlarmListGroupInterval = int.Parse(x)},
+                { "g|alarmListGroupInterval=", x => this.AlarmListGroupInterval = int.Parse(x, CultureInfo.InvariantCulture)},
                 { "db|database=", x => this.AlarmDatabasePath = x }
             }.Parse(Environment.GetCommandLineArgs().Skip(1));
         }
 
         public override string ToString()
         {
-            return string.Format("alarmSoundFile={0};checkInterval={1};enableSound={2};popupOnAlarm={3};smartAlarm={4};alarmListGroupInterval={5};alarmDatabasePath={6}",
+            return string.Format(CultureInfo.InvariantCulture, "alarmSoundFile={0};checkInterval={1};enableSound={2};popupOnAlarm={3};smartAlarm={4};alarmListGroupInterval={5};alarmDatabasePath={6}",
                 this.AlarmSoundFile, this.CheckInterval, this.EnableSound, this.PopupOnAlarm, this.SmartAlarm, this.AlarmListGroupInterval, this.AlarmDatabasePath);
         }
     }

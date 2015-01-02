@@ -40,17 +40,20 @@ namespace Alarmy.Services
             this.Interval = TimeSpan.FromSeconds(DEFAULT_INTERVAL).TotalMilliseconds;
         }
 
-        public void Start()
+        public void StartTimer()
         {
-            this.timer.Start();
+            this.timer.StartTimer();
         }
-        public void Stop()
+        public void StopTimer()
         {
-            this.timer.Stop();
+            this.timer.StopTimer();
         }
 
         public void Add(IAlarm alarm)
         {
+            if (alarm == null)
+                throw new ArgumentNullException("alarm");
+
             this.cache.Add(alarm.Id, alarm);
             this.repository.Add(alarm);
 
@@ -60,6 +63,9 @@ namespace Alarmy.Services
 
         public void Remove(IAlarm alarm)
         {
+            if (alarm == null)
+                throw new ArgumentNullException("alarm");
+
             this.cache.Remove(alarm.Id);
             this.repository.Remove(alarm);
 
@@ -69,6 +75,9 @@ namespace Alarmy.Services
 
         public void Update(IAlarm alarm)
         {
+            if (alarm == null)
+                throw new ArgumentNullException("alarm");
+
             this.cache[alarm.Id] = alarm;
             this.repository.Update(alarm);
 

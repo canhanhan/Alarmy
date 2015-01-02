@@ -2,6 +2,7 @@
 using Alarmy.Infrastructure;
 using System;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -72,40 +73,44 @@ namespace Alarmy.Views
 
         public string AskCancelReason(IAlarm alarm)
         {
-            var cancelForm = new CancelForm();
-            cancelForm.alarmLabel.Text = string.Format("{0} ({1})", alarm.Title, alarm.Time.ToShortTimeString());
-            if (cancelForm.ShowDialog() == DialogResult.OK)
+            using (var cancelForm = new CancelForm())
             {
-                return cancelForm.CancelReason.Text;
-            }
+                cancelForm.alarmLabel.Text = string.Format(CultureInfo.InvariantCulture, "{0} ({1})", alarm.Title, alarm.Time.ToShortTimeString());
+                if (cancelForm.ShowDialog() == DialogResult.OK)
+                {
+                    return cancelForm.CancelReason.Text;
+                }
 
-            return null;
+                return null;
+            }
         }
 
         public AlarmMetadata AskAlarmMetadata(IAlarm alarm = null)
         {
-            var alarmForm = new AlarmForm();
-            if (alarm != null)
+            using (var alarmForm = new AlarmForm())
             {
-                alarmForm.timeAlarmTime.Value = alarm.Time;
-                alarmForm.timeAlarmTitle.Text = alarm.Title;
-            }
-            else
-            {
-                alarmForm.timeAlarmTitle.Clear();
-                alarmForm.timeAlarmTime.Value = DateTime.Now;
-            }
-
-            if (alarmForm.ShowDialog() == DialogResult.OK)
-            {
-                return new AlarmMetadata
+                if (alarm != null)
                 {
-                    Title = alarmForm.timeAlarmTitle.Text,
-                    Time = alarmForm.timeAlarmTime.Value
-                };
-            }
+                    alarmForm.timeAlarmTime.Value = alarm.Time;
+                    alarmForm.timeAlarmTitle.Text = alarm.Title;
+                }
+                else
+                {
+                    alarmForm.timeAlarmTitle.Clear();
+                    alarmForm.timeAlarmTime.Value = DateTime.Now;
+                }
 
-            return null;
+                if (alarmForm.ShowDialog() == DialogResult.OK)
+                {
+                    return new AlarmMetadata
+                    {
+                        Title = alarmForm.timeAlarmTitle.Text,
+                        Time = alarmForm.timeAlarmTime.Value
+                    };
+                }
+
+                return null;
+            }
         }
 
         public void UpdateAlarm(IAlarm alarm)
@@ -163,7 +168,7 @@ namespace Alarmy.Views
 
             var grouppedItems = this.listView1.Items.Cast<ListViewItem>()
                 .OrderBy(x => ((IAlarm)x.Tag).Time)
-                .GroupBy(x => ((IAlarm)x.Tag).Time.RoundUp(TimeSpan.FromMinutes(alarmListGroupInterval))).ToArray();
+                .GroupBy(x => ((IAlarm)x.Tag).Time.Roundup(TimeSpan.FromMinutes(alarmListGroupInterval))).ToArray();
 
             for (var key = 0; key < grouppedItems.Length; key++)
             {
@@ -173,7 +178,7 @@ namespace Alarmy.Views
                 if (begining.Date == DateTime.Today) {
                     title = begining.ToShortTimeString();
                 } else {
-                    title = string.Format("{0} {1}", begining.ToShortDateString(), begining.ToShortTimeString());
+                    title = string.Format(CultureInfo.InvariantCulture, "{0} {1}", begining.ToShortDateString(), begining.ToShortTimeString());
                 }
                 title += " - " + group.Key.ToShortTimeString();
 
@@ -223,7 +228,7 @@ namespace Alarmy.Views
             {
                 case AlarmStatus.Completed:
                     return Color.Green;
-                case AlarmStatus.Cancelled:
+                case AlarmStatus.Canceled:
                     return Color.Gray;
                 case AlarmStatus.Ringing:
                     return Color.Yellow;
@@ -387,7 +392,7 @@ namespace Alarmy.Views
         {
             if (!this.soundToolStripMenuItem.Checked 
                     && !this.popupOnAlarmMenuItem.Checked 
-                    && MessageBox.Show("\"Popup on Alarm\" feature is turned off. If you mute the sound, you will not be notified for ringing alarms. Are you sure?", "Notification Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == System.Windows.Forms.DialogResult.No)
+                    && MessageBox.Show("\"Popup on Alarm\" feature is turned off. If you mute the sound, you will not be notified for ringing alarms. Are you sure?", "Notification Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2, MessageBoxOptions.RtlReading) == System.Windows.Forms.DialogResult.No)
             {
                 this.soundToolStripMenuItem.Checked = true;
                 return;
@@ -410,7 +415,7 @@ namespace Alarmy.Views
         {
             if (!this.soundToolStripMenuItem.Checked
                     && !this.popupOnAlarmMenuItem.Checked
-                    && MessageBox.Show("Alarmy is muted. If you disable \"Popup on Alarm\" feature, you will not be notified for ringing alarms. Are you sure?", "Notification Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == System.Windows.Forms.DialogResult.No)
+                    && MessageBox.Show("Alarmy is muted. If you disable \"Popup on Alarm\" feature, you will not be notified for ringing alarms. Are you sure?", "Notification Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2, MessageBoxOptions.RtlReading) == System.Windows.Forms.DialogResult.No)
             {
                 this.popupOnAlarmMenuItem.Checked = true;
                 return;
@@ -437,7 +442,7 @@ namespace Alarmy.Views
 
                 var alarm = item.Tag as Alarm;
                 this.completeToolStripMenuItem.Enabled = alarm.CanBeCompleted;
-                this.cancelStripMenuItem.Enabled = alarm.CanBeCancelled;
+                this.cancelStripMenuItem.Enabled = alarm.CanBeCanceled;
                 this.changeToolStripMenuItem.Enabled = alarm.CanBeSet;
                 this.hushToolStripMenuItem.Checked = alarm.IsHushed;
                 this.hushToolStripMenuItem.Enabled = alarm.Status == AlarmStatus.Ringing;

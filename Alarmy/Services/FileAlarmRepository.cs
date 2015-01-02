@@ -128,8 +128,7 @@ namespace Alarmy.Services
                 if (lastHash == null || hash != lastHash)
                 {
                     file.Position = 0;
-                    using (var streamReader = new StreamReader(file))
-                    using (var reader = new JsonTextReader(streamReader))
+                    using (var reader = new JsonTextReader(new StreamReader(file)))
                     {
                         alarmsCache = GetWorthShowing(serializer.Deserialize<Dictionary<Guid, IAlarm>>(reader) ?? new Dictionary<Guid, IAlarm>());
                         lastHash = hash;
@@ -152,13 +151,10 @@ namespace Alarmy.Services
 
         private void Write(FileStream file)
         {
-            using (var streamWriter = new StreamWriter(file))
+            using (var writer = new JsonTextWriter(new StreamWriter(file)))
             {
-                using (var writer = new JsonTextWriter(streamWriter))
-                {
-                    var alarmsToWrite = alarmsCache.Values.Where(x => x.IsWorthShowing).ToDictionary(x => x.Id);
-                    serializer.Serialize(writer, alarmsToWrite);
-                }
+                var alarmsToWrite = alarmsCache.Values.Where(x => x.IsWorthShowing).ToDictionary(x => x.Id);
+                serializer.Serialize(writer, alarmsToWrite);
             }
         }
 

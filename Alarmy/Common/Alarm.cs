@@ -1,13 +1,14 @@
 ﻿using Castle.Core.Logging;
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace Alarmy.Common
 {
     public class Alarm : IAlarm
     {
-        public const int ISWORTHSHOWING_FRESNESS = 1;
-        private static readonly AlarmStatus[] ALARM_STATUSES_TO_CHECK = new[] { AlarmStatus.Ringing, AlarmStatus.Set };
+        public const int IsWorthShowingFreshness = 1;
+        private static readonly AlarmStatus[] AlarmStatusesToCheck = new[] { AlarmStatus.Ringing, AlarmStatus.Set };
 
 
         private Guid _Id = Guid.NewGuid();
@@ -37,7 +38,7 @@ namespace Alarmy.Common
         {
             get
             {
-                return !((Status == AlarmStatus.Cancelled || Status == AlarmStatus.Completed) && Time < GetTime().AddMinutes(-ISWORTHSHOWING_FRESNESS));
+                return !((Status == AlarmStatus.Canceled || Status == AlarmStatus.Completed) && Time < GetTime().AddMinutes(-IsWorthShowingFreshness));
             }
         }
 
@@ -50,7 +51,7 @@ namespace Alarmy.Common
             _DateTimeProvider = dateTimeProvider;
         }
 
-        public void Set(DateTime time)
+        public void SetTime(DateTime time)
         {
             Time = time;
             IsHushed = false;
@@ -67,7 +68,7 @@ namespace Alarmy.Common
         public void Cancel()
         {
             IsHushed = false;
-            SetStatus(AlarmStatus.Cancelled);
+            SetStatus(AlarmStatus.Canceled);
         }
 
         public void Complete()
@@ -76,7 +77,7 @@ namespace Alarmy.Common
             Status = AlarmStatus.Completed;
         }
 
-        public bool CanBeCancelled
+        public bool CanBeCanceled
         {
             get
             {
@@ -118,7 +119,7 @@ namespace Alarmy.Common
 
         public bool CheckStatusChange()
         {
-            if (!ALARM_STATUSES_TO_CHECK.Any(status => status == this.Status))
+            if (!AlarmStatusesToCheck.Any(status => status == this.Status))
                 return false;
 
             var time = GetTime();
@@ -138,6 +139,9 @@ namespace Alarmy.Common
 
         public bool Equals(IAlarm alarm, bool compareOnlyMetadata)
         {
+            if (alarm == null)
+                throw new ArgumentNullException("alarm");
+
             if (compareOnlyMetadata)
                 return DateTime.Equals(this.Time, alarm.Time)
                         && string.Equals(this.Title, alarm.Title)
@@ -148,6 +152,9 @@ namespace Alarmy.Common
 
         public void Import(IAlarm alarm)
         {
+            if (alarm == null)
+                throw new ArgumentNullException("alarm");
+
             this.Status = alarm.Status;
             this.Time = alarm.Time;
             this.Title = alarm.Title;
@@ -156,7 +163,7 @@ namespace Alarmy.Common
 
         public override string ToString()
         {
-            return string.Format("{0} ({1} - {2})", this.Title, this.Time.ToShortDateString(), this.Id.ToString("B"));
+            return string.Format(CultureInfo.CurrentCulture, "{0} ({1} - {2})", this.Title, this.Time.ToShortDateString(), this.Id.ToString("B"));
         }
 
         internal void SetStatus(AlarmStatus status)
@@ -167,8 +174,8 @@ namespace Alarmy.Common
             }
             switch (status)
             {
-                case AlarmStatus.Cancelled:
-                    if (!CanBeCancelled)
+                case AlarmStatus.Canceled:
+                    if (!CanBeCanceled)
                     {
                         throw new InvalidStateException();
                     }

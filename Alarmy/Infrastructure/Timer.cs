@@ -3,7 +3,7 @@ using System;
 
 namespace Alarmy.Infrastructure
 {
-    public class Timer : ITimer
+    public class Timer : ITimer, IDisposable
     {
         public event EventHandler Elapsed;
         private readonly System.Timers.Timer _Timer;
@@ -20,18 +20,19 @@ namespace Alarmy.Infrastructure
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         public Timer()
         {
             _Timer = new System.Timers.Timer() { AutoReset = true };
             _Timer.Elapsed += _Timer_Elapsed;
         }
 
-        public void Start()
+        public void StartTimer()
         {
             _Timer.Start();
         }
 
-        public void Stop()
+        public void StopTimer()
         {
             _Timer.Stop();
         }
