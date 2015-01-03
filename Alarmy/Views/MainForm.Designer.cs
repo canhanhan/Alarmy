@@ -100,7 +100,7 @@
             this.toolStripMenuItem2,
             this.exitToolStripMenuItem});
             this.listViewContext.Name = "listViewContext";
-            this.listViewContext.Size = new System.Drawing.Size(162, 170);
+            this.listViewContext.Size = new System.Drawing.Size(162, 148);
             // 
             // newAlarmToolStripMenuItem
             // 

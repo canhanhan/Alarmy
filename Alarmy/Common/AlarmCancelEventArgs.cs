@@ -2,7 +2,7 @@
 
 namespace Alarmy.Common
 {
-    public class AlarmCancelEventArgs : EventArgs
+    internal class AlarmCancelEventArgs : EventArgs
     {
         public IAlarm Alarm { get; private set; }
         public string Reason { get; private set; }

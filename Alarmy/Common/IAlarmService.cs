@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Alarmy.Common
 {
-    public interface IAlarmService : IDisposable
+    internal interface IAlarmService : IDisposable
     {
         event EventHandler<AlarmEventArgs> AlarmStatusChanged;
         event EventHandler<AlarmEventArgs> AlarmAdded;

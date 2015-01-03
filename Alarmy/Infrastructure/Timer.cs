@@ -3,7 +3,7 @@ using System;
 
 namespace Alarmy.Infrastructure
 {
-    public class Timer : ITimer, IDisposable
+    internal class Timer : ITimer, IDisposable
     {
         public event EventHandler Elapsed;
         private readonly System.Timers.Timer _Timer;

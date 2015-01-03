@@ -68,6 +68,7 @@
     <Compile Include="InMemoryAlarmRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AlarmServiceTests.cs" />
+    <Compile Include="ShowAlarmFreshnessConditionTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Alarmy\Alarmy.csproj">

@@ -2,13 +2,12 @@
 
 namespace Alarmy.Common
 {
-    public interface IAlarm
+    internal interface IAlarm
     {
         Guid Id { get; set; }
         string Title { get; set; }
         AlarmStatus Status { get; }
         DateTime Time { get; set; }
-        bool IsWorthShowing { get; }
         bool IsHushed { get; set; }
         void SetTime(DateTime time);
         void Cancel();

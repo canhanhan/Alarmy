@@ -13,11 +13,12 @@ namespace Alarmy.Controllers
         private readonly ISmartAlarmController smartAlarmController;
         private readonly SoundPlayer soundPlayer;
         private readonly IAlarmService alarmService;
+        private readonly IAlarmFactory alarmFactory;
         private readonly IMainView view;
         private readonly Settings settings;
-
+        
         private ILogger logger = NullLogger.Instance;
-
+        
         public ILogger Logger
         {
             get
@@ -30,8 +31,11 @@ namespace Alarmy.Controllers
             }
         }
 
-        public MainViewController(IMainView view, IAlarmService alarmService, ISmartAlarmController smartAlarmController, Settings settings)
+        public MainViewController(IMainView view, IAlarmService alarmService, ISmartAlarmController smartAlarmController, IAlarmFactory alarmFactory, Settings settings)        
         {
+            this.alarmFactory = alarmFactory;
+            this.settings = settings;
+
             this.view = view;
             this.view.OnLoad += view_Load;
             this.view.OnClosing += view_Closing;
@@ -46,8 +50,6 @@ namespace Alarmy.Controllers
             this.view.OnPopupOnAlarmChange += view_OnPopupOnAlarmChange;
             this.view.OnSmartAlarmChange += view_OnSmartAlarmChange;
 
-            this.settings = settings;
- 
             this.alarmService = alarmService;
             this.alarmService.Interval = settings.CheckInterval;
             this.alarmService.AlarmAdded += alarmService_AlarmAdded;
@@ -62,13 +64,6 @@ namespace Alarmy.Controllers
             this.smartAlarmController.OnWakeup += smartAlarmController_OnWakeup;
             this.smartAlarmController.OnSoundOn += smartAlarmController_OnSound;
             this.smartAlarmController.OnSoundOff += smartAlarmController_OnSound;
-        }
-
-        public void Start()
-        {
-            Logger.Info("Started with settings: " + this.settings.ToString());
-
-            this.view.Show();
         }
 
         public void Dispose()
@@ -149,7 +144,8 @@ namespace Alarmy.Controllers
             {
                 return;
             }
-            var alarm = new Alarm() { Title = metadata.Title };
+            var alarm = this.alarmFactory.Create();
+            alarm.Title = metadata.Title;
             alarm.SetTime(metadata.Time);
 
             Logger.Info(alarm.ToString() + " is created");
@@ -228,18 +224,20 @@ namespace Alarmy.Controllers
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", MessageId = "System.Threading.Timer")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         private void view_Load(object sender, EventArgs e)
         {
             this.view.PopupOnAlarm = this.settings.PopupOnAlarm;
             this.view.EnableSound = this.settings.EnableSound;
             this.view.SmartAlarm = this.settings.SmartAlarm;
-             
-            if (this.settings.StartHidden)
-            {
-                this.view.Hide();
-            }
 
             this.alarmService.StartTimer();
+
+            if (this.settings.StartHidden)
+            {
+                new System.Threading.Timer((_) => this.view_OnHideRequest(null, null), null, 100, System.Threading.Timeout.Infinite);
+            }
         }
 
         private void view_Closing(object sender, EventArgs e)

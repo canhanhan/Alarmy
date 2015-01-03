@@ -2,7 +2,7 @@
 
 namespace Alarmy.Common
 {
-    public class AlarmMetadata
+    internal class AlarmMetadata
     {
         public string Title { get; set; }
         public DateTime Time { get; set; }

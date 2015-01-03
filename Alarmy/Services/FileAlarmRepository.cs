@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace Alarmy.Services
 {
-    public class FileAlarmRepository : IAlarmRepository
+    internal class FileAlarmRepository : IAlarmRepository
     {
         private class SharedFile : IDisposable
         {
@@ -77,17 +77,18 @@ namespace Alarmy.Services
         }
 
         private readonly string path;
+        private readonly JsonSerializer serializer;
+        private readonly IShowAlarmCondition[] conditions;
+
         private string lastHash;
         private Dictionary<Guid, IAlarm> alarmsCache;
-        private readonly JsonSerializerSettings settings;
-        private readonly JsonSerializer serializer;
 
-        public FileAlarmRepository(string path)
+        public FileAlarmRepository(IShowAlarmCondition[] conditions, string path)
         {
+            this.conditions = conditions;
             this.path = path;
-            settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
-            serializer = JsonSerializer.Create(settings);
-
+            serializer = JsonSerializer.Create();
+            serializer.TypeNameHandling = TypeNameHandling.All;
             if (!File.Exists(path))
             {
                 using (File.Create(path))
@@ -153,14 +154,19 @@ namespace Alarmy.Services
         {
             using (var writer = new JsonTextWriter(new StreamWriter(file)))
             {
-                var alarmsToWrite = alarmsCache.Values.Where(x => x.IsWorthShowing).ToDictionary(x => x.Id);
+                var alarmsToWrite = alarmsCache.Values.Where(this.IsWorthShowing).ToDictionary(x => x.Id);
                 serializer.Serialize(writer, alarmsToWrite);
             }
         }
 
-        private static Dictionary<Guid, IAlarm> GetWorthShowing(Dictionary<Guid, IAlarm> alarms)
+        private Dictionary<Guid, IAlarm> GetWorthShowing(Dictionary<Guid, IAlarm> alarms)
         {
-            return alarms.Values.Where(x => x.IsWorthShowing).ToDictionary(x => x.Id);
+            return alarms.Values.Where(this.IsWorthShowing).ToDictionary(x => x.Id);
+        }
+
+        public bool IsWorthShowing(IAlarm alarm)
+        {
+            return this.conditions.All(condition => condition.Match(alarm));
         }
     }
 }

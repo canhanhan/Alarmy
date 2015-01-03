@@ -1,6 +1,6 @@
 ﻿namespace Alarmy.Common
 {
-    public enum AlarmStatus
+    internal enum AlarmStatus
     {
         Set,
         Ringing,

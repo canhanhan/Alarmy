@@ -5,6 +5,7 @@ using Castle.Windsor.Installer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Alarmy
@@ -18,10 +19,8 @@ namespace Alarmy
 
         internal class MainFormContext : ApplicationContext
         {
-            public MainFormContext(MainViewController controller, MainForm form) : base(form)
-            {
-                controller.Start();
-            }
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "controller")]
+            public MainFormContext(MainViewController controller, MainForm form) : base(form) { }            
         }
 
         /// <summary>

@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace Alarmy
 {
-    public static class Extensions
+    internal static class Extensions
     {
         public static DateTime RoundToMinute(this DateTime value)
         {

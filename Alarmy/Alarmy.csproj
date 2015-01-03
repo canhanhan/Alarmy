@@ -25,9 +25,10 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ProductName>Alarmy</ProductName>
     <PublisherName>Can Hanhan</PublisherName>
-    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationRevision>1</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -62,14 +63,22 @@
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetZone>
-    </TargetZone>
+    <TargetZone>LocalIntranet</TargetZone>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>false</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>61594E4C8DF913C099676F4062E2205D885BDACD</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>Alarmy_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Castle.Core">
@@ -107,13 +116,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\AlarmEventArgs.cs" />
+    <Compile Include="Common\AlarmFactory.cs" />
     <Compile Include="Common\AlarmMetadata.cs" />
     <Compile Include="Common\IAlarm.cs" />
+    <Compile Include="Common\IAlarmFactory.cs" />
     <Compile Include="Common\ISmartAlarmController.cs" />
     <Compile Include="Controllers\SmartAlarmController.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Infrastructure\DatabasePathLayoutRenderer.cs" />
+    <Compile Include="Common\IShowAlarmCondition.cs" />
+    <Compile Include="Infrastructure\DateTimeProvider.cs" />
     <Compile Include="Infrastructure\Settings.cs" />
+    <Compile Include="Infrastructure\ShowAlarmCondition.cs" />
     <Compile Include="Infrastructure\SoundPlayer.cs" />
     <Compile Include="Infrastructure\WindsorInstaller.cs" />
     <Compile Include="Infrastructure\Extensions.cs" />
@@ -163,27 +177,10 @@
     <EmbeddedResource Include="Views\AlarmForm.resx">
       <DependentUpon>AlarmForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+    <None Include="Alarmy_TemporaryKey.pfx" />
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">

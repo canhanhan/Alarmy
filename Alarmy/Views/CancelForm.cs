@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace Alarmy.Views
 {
-    public partial class CancelForm : Form
+    internal partial class CancelForm : Form
     {
         public CancelForm()
         {

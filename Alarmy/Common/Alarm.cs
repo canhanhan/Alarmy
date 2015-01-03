@@ -1,15 +1,14 @@
-﻿using Castle.Core.Logging;
+﻿using Alarmy.Infrastructure;
+using Castle.Core.Logging;
 using System;
 using System.Globalization;
 using System.Linq;
 
 namespace Alarmy.Common
 {
-    public class Alarm : IAlarm
+    internal class Alarm : IAlarm
     {
-        public const int IsWorthShowingFreshness = 1;
         private static readonly AlarmStatus[] AlarmStatusesToCheck = new[] { AlarmStatus.Ringing, AlarmStatus.Set };
-
 
         private Guid _Id = Guid.NewGuid();
         private readonly IDateTimeProvider _DateTimeProvider;
@@ -34,16 +33,9 @@ namespace Alarmy.Common
 
         public bool IsHushed { get; set; }
 
-        public bool IsWorthShowing
+        public Alarm() 
         {
-            get
-            {
-                return !((Status == AlarmStatus.Canceled || Status == AlarmStatus.Completed) && Time < GetTime().AddMinutes(-IsWorthShowingFreshness));
-            }
-        }
-
-        public Alarm()
-        {
+            _DateTimeProvider = new DateTimeProvider();
         }
 
         public Alarm(IDateTimeProvider dateTimeProvider)
@@ -213,7 +205,7 @@ namespace Alarmy.Common
 
         private DateTime GetTime()
         {
-            return (_DateTimeProvider == null ? DateTime.Now : _DateTimeProvider.Now).RoundToMinute();
+            return _DateTimeProvider.Now.RoundToMinute();
         }
     }
 }
