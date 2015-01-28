@@ -23,7 +23,7 @@ namespace Alarmy.Infrastructure
             container.AddFacility<LoggingFacility>(f => f.UseNLog().WithAppConfig());
             container.Kernel.Resolver.AddSubResolver(new ArrayResolver(container.Kernel, true));   
 
-            container.Register(Component.For<Settings>());
+            container.Register(Component.For<Settings>().ImplementedBy<CommandLineArgsSettings>());
 
             container.Register(Component
                 .For<IAlarmRepository>()

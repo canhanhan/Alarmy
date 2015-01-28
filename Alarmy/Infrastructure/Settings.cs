@@ -47,7 +47,7 @@ namespace Alarmy.Infrastructure
             this.StartHidden = false;
             this.AlarmListGroupInterval = 15;
             this.AlarmDatabasePath = Environment.ExpandEnvironmentVariables("%TEMP%\\alarms.db");
-            this.Freshness = 15;
+            this.Freshness = 120;
         }
 
         public override string ToString()
