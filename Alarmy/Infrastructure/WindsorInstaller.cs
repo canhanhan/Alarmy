@@ -1,6 +1,6 @@
 ﻿using Alarmy.Common;
-using Alarmy.Controllers;
-using Alarmy.Services;
+using Alarmy.Core;
+using Alarmy.ViewModels;
 using Alarmy.Views;
 using Castle.Facilities.Logging;
 using Castle.MicroKernel.Registration;
@@ -8,8 +8,7 @@ using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Linq.Expressions;
 
 namespace Alarmy.Infrastructure
 {
@@ -36,6 +35,7 @@ namespace Alarmy.Infrastructure
                 .For<IAlarmService>()
                 .ImplementedBy<AlarmService>()
                 .LifestyleSingleton()
+                .DynamicParameters((k, d) => d["repositoryRefreshIntervalInSeconds"] = k.Resolve<Settings>().RepositoryRefreshIntervalInSeconds)
             );
 
             container.Register(Component
@@ -45,8 +45,8 @@ namespace Alarmy.Infrastructure
             );
 
             container.Register(Component
-                .For<ISmartAlarmController>()
-                .ImplementedBy<SmartAlarmController>()
+                .For<IAlarmManager>()
+                .ImplementedBy<SessionStateBasedAlarmManager>()
                 .LifestyleSingleton()
             );
 
@@ -68,9 +68,18 @@ namespace Alarmy.Infrastructure
                 .LifestyleSingleton()
             );
 
-            container.Register(Classes.FromThisAssembly().IncludeNonPublicTypes().BasedOn<IShowAlarmCondition>().WithServiceFirstInterface());
+            container.Register(
+                Classes.FromThisAssembly()
+                .IncludeNonPublicTypes()
+                .BasedOn<IRepositoryFilter>()
+                .WithServiceFirstInterface()
+                .Configure(x => x.DynamicParameters((k, d) =>
+                {
+                    d["freshnessInMinutes"] = k.Resolve<Settings>().FreshnessInMinutes;
+                }))
+            );
 
-            container.Register(Component.For<MainViewController>().LifestyleSingleton());
+            container.Register(Component.For<MainViewModel>().LifestyleSingleton());
 
             container.Register(Component.For<Program.MainFormContext>().LifestyleSingleton());
         }

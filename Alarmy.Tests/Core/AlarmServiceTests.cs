@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Alarmy.Common;
+using Alarmy.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Alarmy.Common;
 using NSubstitute;
-using System.Reflection;
-using Alarmy.Services;
+using System;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Alarmy.Tests
 {
@@ -35,7 +34,7 @@ namespace Alarmy.Tests
         {
             this.repository = new InMemoryAlarmRepository();
             this.timer = Substitute.For<ITimer>();
-            this.service = new AlarmService(this.repository, timer);
+            this.service = new AlarmService(this.repository, timer, 0);
             this.service.StartTimer();
         }
 

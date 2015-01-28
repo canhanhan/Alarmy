@@ -3,12 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Alarmy.Services
+namespace Alarmy.Core
 {
     internal class AlarmService : IAlarmService, IDisposable
     {
-        private const int DEFAULT_INTERVAL = 30;
-
         private readonly ITimer timer;
         private readonly IAlarmRepository repository;
         private readonly Dictionary<Guid, IAlarm> cache;
@@ -30,14 +28,14 @@ namespace Alarmy.Services
             }
         }
 
-        public AlarmService(IAlarmRepository repository, ITimer timer)
+        public AlarmService(IAlarmRepository repository, ITimer timer, int repositoryRefreshIntervalInSeconds)
         {
             this.repository = repository;
             this.cache = new Dictionary<Guid, IAlarm>();
             this.timer = timer;
             this.timer.Elapsed += _Timer_Elapsed;
 
-            this.Interval = TimeSpan.FromSeconds(DEFAULT_INTERVAL).TotalMilliseconds;
+            this.Interval = TimeSpan.FromSeconds(repositoryRefreshIntervalInSeconds).TotalMilliseconds;
         }
 
         public void StartTimer()

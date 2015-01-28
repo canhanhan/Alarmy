@@ -1,6 +1,6 @@
 ﻿namespace Alarmy.Common
 {
-    interface IShowAlarmCondition
+    interface IRepositoryFilter
     {
         bool Match(IAlarm alarm);
     }

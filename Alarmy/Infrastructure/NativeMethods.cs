@@ -25,7 +25,8 @@ namespace Alarmy
             public IntPtr lParam;
         }
 
-        public const int HWND_BROADCAST = 0xffff;
+        public const int HWND_BROADCAST = 0xffff;       
+        
         public static readonly int WM_SHOWME = RegisterWindowMessage("WM_SHOWME");
 
         [DllImport("user32")]
@@ -44,8 +45,5 @@ namespace Alarmy
         [DllImport("User32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
         [return:MarshalAs(UnmanagedType.Bool)]
         public static extern bool MoveWindow(IntPtr hWnd, int x, int y, int cx, int cy, [MarshalAs(UnmanagedType.Bool)]bool repaint);
-
-        [DllImport("kernel32.dll")]
-        public static extern uint WTSGetActiveConsoleSessionId();
     }
 }

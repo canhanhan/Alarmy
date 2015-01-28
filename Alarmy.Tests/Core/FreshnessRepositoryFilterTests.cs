@@ -1,4 +1,5 @@
 ﻿using Alarmy.Common;
+using Alarmy.Core;
 using Alarmy.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -10,30 +11,20 @@ using System.Text;
 namespace Alarmy.Tests
 {
     [TestClass]
-    public class ShowAlarmFreshnessConditionTests
+    public class FreshnessRepositoryFilterTests
     {
         private const int SAMPLE_FRESHNESS = 1;
         private readonly static DateTime SAMPLE_DATETIME = new DateTime(2014, 10, 10, 13, 05, 0);
 
-        private class TestSettings : Settings
-        {
-            public TestSettings()
-            {
-                this.Freshness = SAMPLE_FRESHNESS;
-            }
-        }
-
         private IDateTimeProvider dateTimeProvider;
         private Alarm alarm;
-        private ShowAlarmFreshnessCondition condition;
+        private FreshnessRepositoryFilter condition;
 
         [TestInitialize]
         public void Setup()
         {
-            var settings = new TestSettings();
-
             this.dateTimeProvider = Substitute.For<IDateTimeProvider>();
-            this.condition = new ShowAlarmFreshnessCondition(this.dateTimeProvider, settings);
+            this.condition = new FreshnessRepositoryFilter(this.dateTimeProvider, SAMPLE_FRESHNESS);
             this.alarm = new Alarm(this.dateTimeProvider);
         }
 
@@ -101,7 +92,7 @@ namespace Alarmy.Tests
         {
             dateTimeProvider.Now.Returns(SAMPLE_DATETIME);
             alarm.SetTime(isFresh ? SAMPLE_DATETIME : SAMPLE_DATETIME.AddMinutes(-(SAMPLE_FRESHNESS + 1)));
-            alarm.SetStatusTest(status);
+            alarm.Status = status;
 
             Assert.AreEqual(expectSuccess, this.condition.Match(alarm));
         }

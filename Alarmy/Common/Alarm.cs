@@ -9,9 +9,9 @@ namespace Alarmy.Common
     internal class Alarm : IAlarm
     {
         private static readonly AlarmStatus[] AlarmStatusesToCheck = new[] { AlarmStatus.Ringing, AlarmStatus.Set };
-
-        private Guid _Id = Guid.NewGuid();
+      
         private readonly IDateTimeProvider _DateTimeProvider;
+        private Guid _Id = Guid.NewGuid();
 
         public Guid Id
         {
@@ -50,13 +50,6 @@ namespace Alarmy.Common
             SetStatus(AlarmStatus.Set);
         }
 
-#if DEBUG
-        public void SetStatusTest(AlarmStatus status)
-        {
-            Status = status;
-        }
-#endif
-
         public void Cancel()
         {
             IsHushed = false;
@@ -66,7 +59,7 @@ namespace Alarmy.Common
         public void Complete()
         {
             IsHushed = false;
-            Status = AlarmStatus.Completed;
+            SetStatus(AlarmStatus.Completed);
         }
 
         public bool CanBeCanceled
@@ -106,6 +99,14 @@ namespace Alarmy.Common
             get
             {
                 return Status == AlarmStatus.Ringing || Status == AlarmStatus.Set;
+            }
+        }
+
+        public bool IsRinging
+        {
+            get
+            {
+                return Status == AlarmStatus.Ringing && !IsHushed;
             }
         }
 

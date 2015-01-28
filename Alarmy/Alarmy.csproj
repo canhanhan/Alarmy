@@ -139,23 +139,30 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\AlarmEventArgs.cs" />
-    <Compile Include="Common\AlarmFactory.cs" />
+    <Compile Include="Core\AlarmFactory.cs" />
     <Compile Include="Common\AlarmMetadata.cs" />
     <Compile Include="Common\IAlarm.cs" />
     <Compile Include="Common\IAlarmFactory.cs" />
-    <Compile Include="Common\ISmartAlarmController.cs" />
-    <Compile Include="Controllers\SmartAlarmController.cs" />
+    <Compile Include="Common\IAlarmManager.cs" />
+    <Compile Include="Common\ISessionStateProvider.cs" />
+    <Compile Include="CommandLineArgsSettings.cs" />
+    <Compile Include="Core\SessionStatusBasedAlarmManager.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Infrastructure\DatabasePathLayoutRenderer.cs" />
-    <Compile Include="Common\IShowAlarmCondition.cs" />
+    <Compile Include="Common\IRepositoryFilter.cs" />
     <Compile Include="Infrastructure\DateTimeProvider.cs" />
-    <Compile Include="Infrastructure\Settings.cs" />
-    <Compile Include="Infrastructure\ShowAlarmCondition.cs" />
+    <Compile Include="Common\ISharedFile.cs" />
+    <Compile Include="Common\ISharedFileFactory.cs" />
+    <Compile Include="Infrastructure\SessionStateProvider.cs" />
+    <Compile Include="Common\Settings.cs" />
+    <Compile Include="Core\FreshnessRepositoryFilter.cs" />
+    <Compile Include="Infrastructure\SharedFile.cs" />
+    <Compile Include="Infrastructure\SharedFileFactory.cs" />
     <Compile Include="Infrastructure\SoundPlayer.cs" />
     <Compile Include="Infrastructure\WindsorInstaller.cs" />
     <Compile Include="Infrastructure\Extensions.cs" />
     <Compile Include="Infrastructure\NativeMethods.cs" />
-    <Compile Include="Services\FileAlarmRepository.cs" />
+    <Compile Include="Core\FileAlarmRepository.cs" />
     <Compile Include="Views\CancelForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -171,7 +178,7 @@
     </Compile>
     <Compile Include="Common\AlarmCancelEventArgs.cs" />
     <Compile Include="Common\Alarm.cs" />
-    <Compile Include="Services\AlarmService.cs" />
+    <Compile Include="Core\AlarmService.cs" />
     <Compile Include="Common\AlarmStatus.cs" />
     <Compile Include="Common\IAlarmRepository.cs" />
     <Compile Include="Common\ITimer.cs" />
@@ -190,7 +197,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Infrastructure\Timer.cs" />
-    <Compile Include="Controllers\MainViewController.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
     <EmbeddedResource Include="Views\CancelForm.resx">
       <DependentUpon>CancelForm.cs</DependentUpon>
     </EmbeddedResource>

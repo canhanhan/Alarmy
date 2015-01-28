@@ -1,4 +1,4 @@
-﻿using Alarmy.Controllers;
+﻿using Alarmy.ViewModels;
 using Alarmy.Views;
 using Castle.Windsor;
 using Castle.Windsor.Installer;
@@ -20,7 +20,7 @@ namespace Alarmy
         internal class MainFormContext : ApplicationContext
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "controller")]
-            public MainFormContext(MainViewController controller, MainForm form) : base(form) { }            
+            public MainFormContext(MainViewModel controller, MainForm form) : base(form) { }            
         }
 
         /// <summary>

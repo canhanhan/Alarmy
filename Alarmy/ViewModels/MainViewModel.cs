@@ -6,17 +6,22 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Alarmy.Controllers
+namespace Alarmy.ViewModels
 {
-    internal class MainViewController :IDisposable
+    internal class MainViewModel :IDisposable
     {
-        private readonly ISmartAlarmController smartAlarmController;
+        private readonly IAlarmManager alarmManager;
         private readonly SoundPlayer soundPlayer;
         private readonly IAlarmService alarmService;
         private readonly IAlarmFactory alarmFactory;
         private readonly IMainView view;
         private readonly Settings settings;
-        
+
+        private bool smartAlarmEnabled;
+        private bool smartAlarmMute;
+        private bool soundEnabled;
+        private bool popupOnAlarmEnabled;
+
         private ILogger logger = NullLogger.Instance;
         
         public ILogger Logger
@@ -31,10 +36,14 @@ namespace Alarmy.Controllers
             }
         }
 
-        public MainViewController(IMainView view, IAlarmService alarmService, ISmartAlarmController smartAlarmController, IAlarmFactory alarmFactory, Settings settings)        
+        public MainViewModel(IMainView view, IAlarmService alarmService, IAlarmManager alarmManager, IAlarmFactory alarmFactory, Settings settings)        
         {
             this.alarmFactory = alarmFactory;
             this.settings = settings;
+
+            this.popupOnAlarmEnabled = this.settings.PopupOnAlarm;
+            this.soundEnabled = this.settings.EnableSound;
+            this.smartAlarmEnabled = this.settings.SmartAlarm;
 
             this.view = view;
             this.view.OnLoad += view_Load;
@@ -59,11 +68,11 @@ namespace Alarmy.Controllers
 
             soundPlayer = new SoundPlayer(settings.AlarmSoundFile);
 
-            this.smartAlarmController = smartAlarmController;
-            this.smartAlarmController.OnSleep += smartAlarmController_OnSleep;
-            this.smartAlarmController.OnWakeup += smartAlarmController_OnWakeup;
-            this.smartAlarmController.OnSoundOn += smartAlarmController_OnSound;
-            this.smartAlarmController.OnSoundOff += smartAlarmController_OnSound;
+            this.alarmManager = alarmManager;
+            this.alarmManager.OnSleep += alarmManager_OnSleep;
+            this.alarmManager.OnWakeup += alarmManager_OnWakeup;
+            this.alarmManager.OnSoundOn += alarmManager_OnSoundOn;
+            this.alarmManager.OnSoundOff += alarmManager_OnSoundOff;
         }
 
         public void Dispose()
@@ -74,7 +83,7 @@ namespace Alarmy.Controllers
 
         private void CheckForAlarmSound()
         {
-            if (this.view.EnableSound && (!this.view.SmartAlarm || !this.smartAlarmController.IsSilent) && this.AnyRingingAlarms())
+            if (this.IsAlarmAllowed() && this.AnyRingingAlarms())
             {
                 if (!this.soundPlayer.IsPlaying)
                 {
@@ -82,25 +91,27 @@ namespace Alarmy.Controllers
                     this.soundPlayer.Play();
                 }                    
             }
-            else
+            else if (this.soundPlayer.IsPlaying)
             {
-                if (this.soundPlayer.IsPlaying)
-                {
                     Logger.Info("Alarm is not ringing...");
                     this.soundPlayer.Stop();
-                }                    
             }
+        }
+
+        private bool IsAlarmAllowed()
+        {
+            return this.soundEnabled && !(this.smartAlarmEnabled && this.smartAlarmMute);
         }
 
         private bool AnyRingingAlarms()
         {
-            var alarms = this.alarmService.List();
-            return alarms.Any(x => x.Status == AlarmStatus.Ringing && !x.IsHushed);
+            return this.alarmService.List().Any(alarm => alarm.IsRinging);
         }
 
         #region View Events
         private void view_OnSmartAlarmChange(object sender, EventArgs e)
         {
+            this.smartAlarmEnabled = this.view.SmartAlarm;
             if (this.view.SmartAlarm)
             {
                 Logger.Info("Smart alarm is enabled.");
@@ -113,6 +124,7 @@ namespace Alarmy.Controllers
 
         private void view_OnPopupOnAlarmChange(object sender, EventArgs e)
         {
+            this.popupOnAlarmEnabled = this.view.PopupOnAlarm;
             if (this.view.PopupOnAlarm)
             {
                 Logger.Info("List is set to popup on alarm");
@@ -125,6 +137,7 @@ namespace Alarmy.Controllers
 
         private void view_OnEnableSoundChange(object sender, EventArgs e)
         {
+            this.soundEnabled = this.view.EnableSound;
             if (this.view.EnableSound)
             {
                 Logger.Info("Sound is enabled.");
@@ -228,9 +241,9 @@ namespace Alarmy.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         private void view_Load(object sender, EventArgs e)
         {
-            this.view.PopupOnAlarm = this.settings.PopupOnAlarm;
-            this.view.EnableSound = this.settings.EnableSound;
-            this.view.SmartAlarm = this.settings.SmartAlarm;
+            this.view.PopupOnAlarm = this.popupOnAlarmEnabled;
+            this.view.EnableSound = this.soundEnabled;
+            this.view.SmartAlarm = this.smartAlarmEnabled;
 
             this.alarmService.StartTimer();
 
@@ -277,19 +290,26 @@ namespace Alarmy.Controllers
         }
         #endregion
 
-        #region SmartAlarm Events
-        private void smartAlarmController_OnSound(object sender, EventArgs e)
+        #region AlarmManager Events
+        private void alarmManager_OnSoundOn(object sender, EventArgs e)
         {
+            this.smartAlarmMute = false;
             this.CheckForAlarmSound();
         }
 
-        private void smartAlarmController_OnWakeup(object sender, EventArgs e)
+        private void alarmManager_OnSoundOff(object sender, EventArgs e)
         {
-            Logger.Info("Smart Alarm sent wakeup");
-            this.alarmService.StartTimer();
+            this.smartAlarmMute = true;
+            this.CheckForAlarmSound();
         }
 
-        private void smartAlarmController_OnSleep(object sender, EventArgs e)
+        private void alarmManager_OnWakeup(object sender, EventArgs e)
+        {
+            Logger.Info("Smart Alarm sent wakeup");
+            this.alarmService.StartTimer();            
+        }
+
+        private void alarmManager_OnSleep(object sender, EventArgs e)
         {
             Logger.Info("Smart Alarm sent sleep");
             this.alarmService.StopTimer();

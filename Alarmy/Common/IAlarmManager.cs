@@ -2,11 +2,8 @@
 
 namespace Alarmy.Common
 {
-    internal interface ISmartAlarmController
+    internal interface IAlarmManager
     {
-        bool IsActive { get; }
-        bool IsSilent { get; }
-
         event EventHandler OnSleep;
         event EventHandler OnSoundOff;
         event EventHandler OnSoundOn;

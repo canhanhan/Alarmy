@@ -17,12 +17,10 @@ namespace Alarmy.Common
         bool CanBeRinging { get; }
         bool CanBeSet { get; }
         bool CanBeMissed { get; }
+        bool IsRinging { get; }
         bool CheckStatusChange();
 
         bool Equals(IAlarm alarm, bool compareOnlyMetadata);
         void Import(IAlarm alarm);
-#if DEBUG
-        void SetStatusTest(AlarmStatus status);
-#endif
     }
 }

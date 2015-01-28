@@ -1,6 +1,8 @@
-﻿namespace Alarmy.Common
+﻿using Alarmy.Common;
+
+namespace Alarmy.Core
 {
-    internal class AlarmFactory : Alarmy.Common.IAlarmFactory
+    internal class AlarmFactory : IAlarmFactory
     {
         private readonly IDateTimeProvider dateTimeProvider;
 

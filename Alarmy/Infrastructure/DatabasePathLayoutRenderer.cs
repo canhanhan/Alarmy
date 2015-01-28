@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using Alarmy.Common;
+using NLog;
 using NLog.LayoutRenderers;
 using System.IO;
 using System.Text;

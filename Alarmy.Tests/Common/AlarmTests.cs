@@ -23,7 +23,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenSet_CanBeCancelled()
         {
-            alarm.SetStatusTest(AlarmStatus.Set);
+            alarm.Status = AlarmStatus.Set;
             
             alarm.Cancel();
 
@@ -33,7 +33,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenSet_CanBeRinging()
         {
-            alarm.SetStatusTest(AlarmStatus.Set);
+            alarm.Status = AlarmStatus.Set;
 
             alarm.SetStatus(AlarmStatus.Ringing);
 
@@ -44,7 +44,7 @@ namespace Alarmy.Tests
         [ExpectedException(typeof(InvalidStateException))]
         public void Alarm_WhenSet_CannotBeCompleted()
         {
-            alarm.SetStatusTest(AlarmStatus.Set);
+            alarm.Status = AlarmStatus.Set;
 
             alarm.SetStatus(AlarmStatus.Completed);
         }
@@ -52,7 +52,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenSet_CanBeMissed()
         {
-            alarm.SetStatusTest(AlarmStatus.Set);
+            alarm.Status = AlarmStatus.Set;
 
             alarm.SetStatus(AlarmStatus.Missed);
             Assert.AreEqual(AlarmStatus.Missed, alarm.Status);
@@ -63,7 +63,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenRinging_CanBeCompleted()
         {
-            alarm.SetStatusTest(AlarmStatus.Ringing);
+            alarm.Status = AlarmStatus.Ringing;
 
             alarm.SetStatus(AlarmStatus.Completed);
             Assert.AreEqual(AlarmStatus.Completed, alarm.Status);
@@ -72,7 +72,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenRinging_CanBeMissed()
         {
-            alarm.SetStatusTest(AlarmStatus.Ringing);
+            alarm.Status = AlarmStatus.Ringing;
 
             alarm.SetStatus(AlarmStatus.Missed);
             Assert.AreEqual(AlarmStatus.Missed, alarm.Status);
@@ -81,7 +81,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenRinging_CanBeCancelled()
         {
-            alarm.SetStatusTest(AlarmStatus.Ringing);
+            alarm.Status = AlarmStatus.Ringing;
 
             alarm.SetStatus(AlarmStatus.Canceled);
             Assert.AreEqual(AlarmStatus.Canceled, alarm.Status);
@@ -90,7 +90,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenRinging_CanBeSet()
         {
-            alarm.SetStatusTest(AlarmStatus.Ringing);
+            alarm.Status = AlarmStatus.Ringing;
 
             alarm.SetStatus(AlarmStatus.Set);
             Assert.AreEqual(AlarmStatus.Set, alarm.Status);
@@ -102,7 +102,7 @@ namespace Alarmy.Tests
         [ExpectedException(typeof(InvalidStateException))]
         public void Alarm_WhenCancelled_CannotBeCompleted()
         {
-            alarm.SetStatusTest(AlarmStatus.Canceled);
+            alarm.Status = AlarmStatus.Canceled;
 
             alarm.SetStatus(AlarmStatus.Completed);
         }
@@ -111,7 +111,7 @@ namespace Alarmy.Tests
         [ExpectedException(typeof(InvalidStateException))]
         public void Alarm_WhenCancelled_CannotBeRinging()
         {
-            alarm.SetStatusTest(AlarmStatus.Canceled);
+            alarm.Status = AlarmStatus.Canceled;
 
             alarm.SetStatus(AlarmStatus.Ringing);
         }
@@ -119,7 +119,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenCancelled_CanBeSet()
         {
-            alarm.SetStatusTest(AlarmStatus.Canceled);
+            alarm.Status = AlarmStatus.Canceled;
 
             alarm.SetStatus(AlarmStatus.Set);
 
@@ -130,7 +130,7 @@ namespace Alarmy.Tests
         [ExpectedException(typeof(InvalidStateException))]
         public void Alarm_WhenCancelled_CannotBeMissed()
         {
-            alarm.SetStatusTest(AlarmStatus.Canceled);
+            alarm.Status = AlarmStatus.Canceled;
 
             alarm.SetStatus(AlarmStatus.Missed);
         }
@@ -140,7 +140,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenCompleted_CanBeSet()
         {
-            alarm.SetStatusTest(AlarmStatus.Completed);
+            alarm.Status = AlarmStatus.Completed;
 
             alarm.SetStatus(AlarmStatus.Set);
 
@@ -151,7 +151,7 @@ namespace Alarmy.Tests
         [ExpectedException(typeof(InvalidStateException))]
         public void Alarm_WhenCompleted_CannotBeRinging()
         {
-            alarm.SetStatusTest(AlarmStatus.Completed);
+            alarm.Status = AlarmStatus.Completed;
 
             alarm.SetStatus(AlarmStatus.Ringing);
         }
@@ -160,7 +160,7 @@ namespace Alarmy.Tests
         [ExpectedException(typeof(InvalidStateException))]
         public void Alarm_WhenCompleted_CannotBeCancelled()
         {
-            alarm.SetStatusTest(AlarmStatus.Completed);
+            alarm.Status = AlarmStatus.Completed;
 
             alarm.SetStatus(AlarmStatus.Canceled);
         }
@@ -169,7 +169,7 @@ namespace Alarmy.Tests
         [ExpectedException(typeof(InvalidStateException))]
         public void Alarm_WhenCompleted_CannotBeMissed()
         {
-            alarm.SetStatusTest(AlarmStatus.Completed);
+            alarm.Status = AlarmStatus.Completed;
 
             alarm.SetStatus(AlarmStatus.Missed);
         }
@@ -179,7 +179,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenMissed_CanBeCompleted()
         {
-            alarm.SetStatusTest(AlarmStatus.Missed);
+            alarm.Status = AlarmStatus.Missed;
 
             alarm.SetStatus(AlarmStatus.Completed);
             Assert.AreEqual(AlarmStatus.Completed, alarm.Status);
@@ -188,7 +188,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenMissed_CanBeCancelled()
         {
-            alarm.SetStatusTest(AlarmStatus.Missed);
+            alarm.Status = AlarmStatus.Missed;
 
             alarm.SetStatus(AlarmStatus.Canceled);
             Assert.AreEqual(AlarmStatus.Canceled, alarm.Status);
@@ -197,7 +197,7 @@ namespace Alarmy.Tests
         [TestMethod]
         public void Alarm_WhenMissed_CanBeSet()
         {
-            alarm.SetStatusTest(AlarmStatus.Missed);
+            alarm.Status = AlarmStatus.Missed;
 
             alarm.SetStatus(AlarmStatus.Set);
             Assert.AreEqual(AlarmStatus.Set, alarm.Status);
@@ -207,7 +207,7 @@ namespace Alarmy.Tests
         [ExpectedException(typeof(InvalidStateException))]
         public void Alarm_WhenMissed_CannotBeRinging()
         {
-            alarm.SetStatusTest(AlarmStatus.Missed);
+            alarm.Status = AlarmStatus.Missed;
 
             alarm.SetStatus(AlarmStatus.Ringing);
         }        
