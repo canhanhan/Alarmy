@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Alarmy.Common
+namespace Alarmy.Core.FileAlarmRepository
 {
     interface ISharedFileFactory
     {

@@ -1,4 +1,6 @@
-﻿namespace Alarmy.Common
+﻿using Alarmy.Common;
+
+namespace Alarmy.Core.FileAlarmRepository
 {
     interface IRepositoryFilter
     {

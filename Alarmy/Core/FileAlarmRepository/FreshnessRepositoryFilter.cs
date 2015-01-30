@@ -1,7 +1,7 @@
 ﻿using Alarmy.Common;
 using System;
 
-namespace Alarmy.Core
+namespace Alarmy.Core.FileAlarmRepository
 {
     internal class FreshnessRepositoryFilter : IRepositoryFilter
     {

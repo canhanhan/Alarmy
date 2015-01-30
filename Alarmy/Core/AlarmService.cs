@@ -10,6 +10,7 @@ namespace Alarmy.Core
         private readonly ITimer timer;
         private readonly IAlarmRepository repository;
         private readonly Dictionary<Guid, IAlarm> cache;
+        private readonly bool isStoppableRepository;
 
         public event EventHandler<AlarmEventArgs> AlarmAdded;
         public event EventHandler<AlarmEventArgs> AlarmRemoved;
@@ -30,7 +31,14 @@ namespace Alarmy.Core
 
         public AlarmService(IAlarmRepository repository, ITimer timer, int repositoryRefreshIntervalInSeconds)
         {
+            if (repository == null)
+                throw new ArgumentNullException("repository");
+
+            if (timer == null)
+                throw new ArgumentNullException("timer");
+
             this.repository = repository;
+            this.isStoppableRepository = typeof(ISupportsStartStop).IsAssignableFrom(repository.GetType());
             this.cache = new Dictionary<Guid, IAlarm>();
             this.timer = timer;
             this.timer.Elapsed += _Timer_Elapsed;
@@ -38,13 +46,17 @@ namespace Alarmy.Core
             this.Interval = TimeSpan.FromSeconds(repositoryRefreshIntervalInSeconds).TotalMilliseconds;
         }
 
-        public void StartTimer()
+        public void Start()
         {
-            this.timer.StartTimer();
+            this.timer.Start();
+            if (this.isStoppableRepository)
+                ((ISupportsStartStop)this.repository).Start();
         }
-        public void StopTimer()
+        public void Stop()
         {
-            this.timer.StopTimer();
+            this.timer.Stop();
+            if (this.isStoppableRepository)
+                ((ISupportsStartStop)this.repository).Stop();
         }
 
         public void Add(IAlarm alarm)

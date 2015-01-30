@@ -1,7 +1,7 @@
 ﻿using Alarmy.Common;
 using System.IO;
 
-namespace Alarmy.Infrastructure
+namespace Alarmy.Core.FileAlarmRepository
 {
     internal class SharedFileFactory : ISharedFileFactory
     {

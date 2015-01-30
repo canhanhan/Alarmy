@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Alarmy.Common
+namespace Alarmy.Core.FileAlarmRepository
 {
     interface ISharedFile : IDisposable
     {

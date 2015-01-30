@@ -27,14 +27,20 @@ namespace Alarmy.Infrastructure
             _Timer.Elapsed += _Timer_Elapsed;
         }
 
-        public void StartTimer()
+        public void Start()
         {
             _Timer.Start();
         }
 
-        public void StopTimer()
+        public void Stop()
         {
             _Timer.Stop();
+        }
+
+        public void Reset()
+        {
+            _Timer.Stop();
+            _Timer.Start();
         }
 
         public void Dispose()

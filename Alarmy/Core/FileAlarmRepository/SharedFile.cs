@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Alarmy.Infrastructure
+namespace Alarmy.Core.FileAlarmRepository
 {
     internal class SharedFile : ISharedFile
     {

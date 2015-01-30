@@ -60,7 +60,6 @@ namespace Alarmy.ViewModels
             this.view.OnSmartAlarmChange += view_OnSmartAlarmChange;
 
             this.alarmService = alarmService;
-            this.alarmService.Interval = settings.CheckInterval;
             this.alarmService.AlarmAdded += alarmService_AlarmAdded;
             this.alarmService.AlarmRemoved += alarmService_AlarmRemoved;
             this.alarmService.AlarmUpdated += alarmService_AlarmUpdated;
@@ -245,7 +244,7 @@ namespace Alarmy.ViewModels
             this.view.EnableSound = this.soundEnabled;
             this.view.SmartAlarm = this.smartAlarmEnabled;
 
-            this.alarmService.StartTimer();
+            this.alarmService.Start();
 
             if (this.settings.StartHidden)
             {
@@ -256,7 +255,7 @@ namespace Alarmy.ViewModels
         private void view_Closing(object sender, EventArgs e)
         {
             Logger.Info("Closing...");
-            this.alarmService.StopTimer();
+            this.alarmService.Stop();
         }
         #endregion
 
@@ -306,13 +305,13 @@ namespace Alarmy.ViewModels
         private void alarmManager_OnWakeup(object sender, EventArgs e)
         {
             Logger.Info("Smart Alarm sent wakeup");
-            this.alarmService.StartTimer();            
+            this.alarmService.Start();            
         }
 
         private void alarmManager_OnSleep(object sender, EventArgs e)
         {
             Logger.Info("Smart Alarm sent sleep");
-            this.alarmService.StopTimer();
+            this.alarmService.Stop();
         }
         #endregion
     }

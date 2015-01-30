@@ -1,5 +1,6 @@
 ﻿using Alarmy.Common;
 using Alarmy.Core;
+using Alarmy.Core.FileAlarmRepository;
 using Alarmy.ViewModels;
 using Alarmy.Views;
 using Castle.Facilities.Logging;

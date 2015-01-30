@@ -11,8 +11,8 @@ namespace Alarmy.Common
         event EventHandler<AlarmEventArgs> AlarmUpdated;
 
         double Interval { get; set; }
-        void StartTimer();
-        void StopTimer();
+        void Start();
+        void Stop();
 
         void Add(IAlarm alarm);
         void Remove(IAlarm alarm);

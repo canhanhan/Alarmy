@@ -1,5 +1,6 @@
 ﻿using Alarmy.Common;
 using Alarmy.Core;
+using Alarmy.Core.FileAlarmRepository;
 using Alarmy.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;

@@ -139,6 +139,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\AlarmEventArgs.cs" />
+    <Compile Include="Common\ISupportsStartStop.cs" />
     <Compile Include="Core\AlarmFactory.cs" />
     <Compile Include="Common\AlarmMetadata.cs" />
     <Compile Include="Common\IAlarm.cs" />
@@ -146,23 +147,26 @@
     <Compile Include="Common\IAlarmManager.cs" />
     <Compile Include="Common\ISessionStateProvider.cs" />
     <Compile Include="CommandLineArgsSettings.cs" />
+    <Compile Include="Core\FileAlarmRepository\IFileWatcher.cs" />
+    <Compile Include="Core\FileAlarmRepository\IRepositorySerializer.cs" />
+    <Compile Include="Core\FileAlarmRepository\JsonRepositorySerializer.cs" />
+    <Compile Include="Core\FileAlarmRepository\ReliableFileSystemWatcher.cs" />
     <Compile Include="Core\SessionStatusBasedAlarmManager.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Infrastructure\DatabasePathLayoutRenderer.cs" />
-    <Compile Include="Common\IRepositoryFilter.cs" />
+    <Compile Include="Core\FileAlarmRepository\IRepositoryFilter.cs" />
     <Compile Include="Infrastructure\DateTimeProvider.cs" />
-    <Compile Include="Common\ISharedFile.cs" />
-    <Compile Include="Common\ISharedFileFactory.cs" />
+    <Compile Include="Core\FileAlarmRepository\ISharedFile.cs" />
+    <Compile Include="Core\FileAlarmRepository\ISharedFileFactory.cs" />
     <Compile Include="Infrastructure\SessionStateProvider.cs" />
     <Compile Include="Common\Settings.cs" />
-    <Compile Include="Core\FreshnessRepositoryFilter.cs" />
-    <Compile Include="Infrastructure\SharedFile.cs" />
-    <Compile Include="Infrastructure\SharedFileFactory.cs" />
+    <Compile Include="Core\FileAlarmRepository\FreshnessRepositoryFilter.cs" />
+    <Compile Include="Core\FileAlarmRepository\SharedFile.cs" />
+    <Compile Include="Core\FileAlarmRepository\SharedFileFactory.cs" />
     <Compile Include="Infrastructure\SoundPlayer.cs" />
     <Compile Include="Infrastructure\WindsorInstaller.cs" />
     <Compile Include="Infrastructure\Extensions.cs" />
-    <Compile Include="Infrastructure\NativeMethods.cs" />
-    <Compile Include="Core\FileAlarmRepository.cs" />
+    <Compile Include="Core\FileAlarmRepository\FileAlarmRepository.cs" />
     <Compile Include="Views\CancelForm.cs">
       <SubType>Form</SubType>
     </Compile>
