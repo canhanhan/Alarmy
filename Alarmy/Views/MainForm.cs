@@ -4,46 +4,71 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace Alarmy.Views
 {
     internal partial class MainForm : AppBar, IMainView
     {
+        internal class NativeMethods
+        {
+            [DllImport("user32.dll", SetLastError = true)]
+            public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+        }
         private readonly double alarmListGroupInterval;
+        private readonly SoundPlayer soundPlayer;
+
+        private bool soundEnabled;
 
         public new event EventHandler OnLoad;
         public new event EventHandler OnClosing;
+        public event EventHandler OnShowRequest;
         public event EventHandler OnHideRequest;
         public event EventHandler OnExitRequest;
         public event EventHandler<AlarmEventArgs> OnHushRequest;
+        public event EventHandler<AlarmEventArgs> OnUnhushRequest;
         public event EventHandler<AlarmEventArgs> OnCompleteRequest;
         public event EventHandler<AlarmEventArgs> OnCancelRequest;
         public event EventHandler<AlarmEventArgs> OnChangeRequest;
         public event EventHandler OnNewRequest;
-        public event EventHandler OnEnableSoundChange;
-        public event EventHandler OnPopupOnAlarmChange;
-        public event EventHandler OnSmartAlarmChange;
+        public event EventHandler OnEnableSoundRequest;
+        public event EventHandler OnDisableSoundRequest;
+        public event EventHandler OnPopupOnAlarmOn;
+        public event EventHandler OnPopupOnAlarmOff;
+        public event EventHandler OnSmartAlarmOn;
+        public event EventHandler OnSmartAlarmOff;
 
-        public MainForm(Settings settings)
+        public MainForm(int alarmListGroupInterval, SoundPlayer soundPlayer)
         {
-            this.alarmListGroupInterval = settings.AlarmListGroupInterval;
+            this.alarmListGroupInterval = alarmListGroupInterval;
+            this.soundPlayer = soundPlayer;
 
             this.InitializeComponent();
             this.listView1.DoubleBuffered(true);
             this.notifyIcon1.Text = Text;
             this.notifyIcon1.Icon = Icon;
+
+            this.components.Add(this.soundPlayer);
         }
 
-        public bool EnableSound
+        public bool SoundEnabled
         {
             get
             {
-                return this.soundToolStripMenuItem.Checked;
+                return this.soundEnabled;
             }
             set
             {
-                this.soundToolStripMenuItem.Checked = value;
+                this.soundEnabled = value;
+                if (this.soundEnabled)
+                {
+                    this.label1.Text = "Alarmy";
+                }
+                else
+                {
+                    this.label1.Text = "Alarmy (Muted)";
+                }
             }
         }
 
@@ -69,6 +94,18 @@ namespace Alarmy.Views
             {
                 this.smartAlarmStripMenuItem.Checked = value;
             }
+        }
+
+        public new void Show()
+        {
+            //FIXME: Dirty hack. Delayed visibility because form might be still loading when this command is called.
+            new System.Threading.Timer((_) => this.InvokeIfNecessary(base.Show), null, 100, System.Threading.Timeout.Infinite);
+        }
+
+        public new void Hide()
+        {
+            //FIXME: Dirty hack. Delayed visibility because form might be still loading when this command is called.
+            new System.Threading.Timer((_) => this.InvokeIfNecessary(base.Hide), null, 100, System.Threading.Timeout.Infinite);
         }
 
         public string AskCancelReason(IAlarm alarm)
@@ -147,14 +184,14 @@ namespace Alarmy.Views
             });
         }
 
-        public new void Show()
+        public void PlayAlarm()
         {
-            this.InvokeIfNecessary(base.Show);
+            this.soundPlayer.Play();
         }
 
-        public new void Hide()
+        public void StopAlarm()
         {
-            this.InvokeIfNecessary(base.Hide);
+            this.soundPlayer.Stop();
         }
 
         private ListViewItem GetAlarmItem(IAlarm alarm)
@@ -252,20 +289,14 @@ namespace Alarmy.Views
         {
             base.RegisterBar();
 
-            if (this.OnLoad != null)
-            {
-                this.OnLoad.Invoke(sender, e);
-            }
+            this.OnLoad.Invoke();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             base.UnRegisterBar();
 
-            if (this.OnClosing != null)
-            {
-                this.OnClosing.Invoke(sender, e);
-            }
+            this.OnClosing.Invoke();
         }
 
         private void label1_MouseMove(object sender, MouseEventArgs e)
@@ -322,13 +353,17 @@ namespace Alarmy.Views
                 base.UnRegisterBar();
             }
         }
+
+        protected override void OnLocationChanged(EventArgs e)
+        {
+            base.OnLocationChanged(e);
+        }
         #endregion
 
         #region Menu Events
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.OnExitRequest != null)
-                this.OnExitRequest.Invoke(this, null);
+            this.OnExitRequest.Invoke();
         }
 
         private void hushToolStripMenuItem_Click(object sender, EventArgs e)
@@ -337,8 +372,14 @@ namespace Alarmy.Views
                 return;
 
             var alarm = this.listView1.SelectedItems[0].Tag as IAlarm;
-            if (this.OnHushRequest != null)
-                this.OnHushRequest.Invoke(this, new AlarmEventArgs(alarm));
+            if (!alarm.IsHushed)
+            {
+                this.OnHushRequest.Invoke(e: new AlarmEventArgs(alarm));
+            }
+            else
+            {
+                this.OnUnhushRequest.Invoke(e: new AlarmEventArgs(alarm));
+            }
 
             this.hushToolStripMenuItem.Checked = alarm.IsHushed;
         }
@@ -350,8 +391,7 @@ namespace Alarmy.Views
 
             var alarm = this.listView1.SelectedItems[0].Tag as IAlarm;
 
-            if (this.OnCompleteRequest != null)
-                this.OnCompleteRequest.Invoke(this, new AlarmEventArgs(alarm));
+            this.OnCompleteRequest.Invoke(e: new AlarmEventArgs(alarm));
         }
 
         private void cancelToolStripMenuItem_Click(object sender, EventArgs e)
@@ -361,8 +401,7 @@ namespace Alarmy.Views
 
             var alarm = this.listView1.SelectedItems[0].Tag as IAlarm;
 
-            if (this.OnCancelRequest != null)
-                this.OnCancelRequest.Invoke(this, new AlarmEventArgs(alarm));
+            this.OnCancelRequest.Invoke(e: new AlarmEventArgs(alarm));
         }
 
         private void changeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -372,63 +411,79 @@ namespace Alarmy.Views
 
             var alarm = this.listView1.SelectedItems[0].Tag as Alarm;
 
-            if (this.OnChangeRequest != null)
-                this.OnChangeRequest.Invoke(this, new AlarmEventArgs(alarm));
+            this.OnChangeRequest.Invoke(e: new AlarmEventArgs(alarm));
         }
 
         private void newAlarmToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.OnNewRequest != null)
-                this.OnNewRequest.Invoke(this, null);
+            this.OnNewRequest.Invoke();
         }
 
         private void hideToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.OnHideRequest != null)
-                this.OnHideRequest.Invoke(this, null);
+            if (!this.Visible)
+            {
+                this.OnShowRequest.Invoke();
+            } 
+            else
+            {
+                this.OnHideRequest.Invoke();
+            }            
         }
 
         private void soundToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (!this.soundToolStripMenuItem.Checked 
+            var newValue = !this.soundToolStripMenuItem.Checked;
+            if (!newValue
                     && !this.popupOnAlarmMenuItem.Checked 
-                    && MessageBox.Show("\"Popup on Alarm\" feature is turned off. If you mute the sound, you will not be notified for ringing alarms. Are you sure?", "Notification Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2, MessageBoxOptions.RtlReading) == System.Windows.Forms.DialogResult.No)
+                    && MessageBox.Show("\"Popup on Alarm\" feature is turned off. If you mute the sound, you will not be notified for ringing alarms. Are you sure?", "Notification Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == System.Windows.Forms.DialogResult.No)
             {
-                this.soundToolStripMenuItem.Checked = true;
                 return;
             }
 
-            if (this.OnEnableSoundChange != null)
-                this.OnEnableSoundChange.Invoke(this, null);
-
-            if (soundToolStripMenuItem.Checked)
+            this.soundToolStripMenuItem.Checked = newValue;
+            if (this.soundToolStripMenuItem.Checked)
             {
-                this.label1.Text = "Alarmy";
+                this.OnEnableSoundRequest.Invoke();
             }
             else
             {
-                this.label1.Text = "Alarmy (Muted)";
+                this.OnDisableSoundRequest.Invoke();
             }
         }
 
         private void popupOnAlarmMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (!this.soundToolStripMenuItem.Checked
-                    && !this.popupOnAlarmMenuItem.Checked
-                    && MessageBox.Show("Alarmy is muted. If you disable \"Popup on Alarm\" feature, you will not be notified for ringing alarms. Are you sure?", "Notification Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2, MessageBoxOptions.RtlReading) == System.Windows.Forms.DialogResult.No)
+            var newValue = !this.popupOnAlarmMenuItem.Checked;
+            if (!newValue
+                    && !this.soundToolStripMenuItem.Checked
+                    && MessageBox.Show("Alarmy is muted. If you disable \"Popup on Alarm\" feature, you will not be notified for ringing alarms. Are you sure?", "Notification Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == System.Windows.Forms.DialogResult.No)
             {
-                this.popupOnAlarmMenuItem.Checked = true;
                 return;
             }
 
-            if (this.OnPopupOnAlarmChange != null)
-                this.OnPopupOnAlarmChange.Invoke(this, null);
+            this.popupOnAlarmMenuItem.Checked = newValue;
+            if (this.popupOnAlarmMenuItem.Checked)
+            {
+                this.OnPopupOnAlarmOn.Invoke();
+            }
+            else
+            {
+                this.OnPopupOnAlarmOff.Invoke();
+            }
         }
 
         private void smartAlarmStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (this.OnSmartAlarmChange != null)
-                this.OnSmartAlarmChange.Invoke(this, null);
+            this.smartAlarmStripMenuItem.Checked = !this.smartAlarmStripMenuItem.Checked;
+            if (this.smartAlarmStripMenuItem.Checked)
+            {
+                this.OnSmartAlarmOn.Invoke();
+            }
+            else
+            {
+                this.OnSmartAlarmOff.Invoke();
+            }          
         }
         #endregion
 
@@ -447,14 +502,10 @@ namespace Alarmy.Views
                 this.hushToolStripMenuItem.Checked = alarm.IsHushed;
                 this.hushToolStripMenuItem.Enabled = alarm.Status == AlarmStatus.Ringing;
 
-                this.itemContext.Show(Cursor.Position);
-            }
-            else
+                this.listView1.ContextMenu = itemContext;
+            } else
             {
-                if (e.Button.HasFlag(MouseButtons.Right))
-                {
-                    this.listViewContext.Show(Cursor.Position);
-                }
+                this.listView1.ContextMenu = listViewContext;
             }
         }
     }

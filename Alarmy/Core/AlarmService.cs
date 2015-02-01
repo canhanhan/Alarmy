@@ -12,10 +12,10 @@ namespace Alarmy.Core
         private readonly Dictionary<Guid, IAlarm> cache;
         private readonly bool isStoppableRepository;
 
-        public event EventHandler<AlarmEventArgs> AlarmAdded;
-        public event EventHandler<AlarmEventArgs> AlarmRemoved;
-        public event EventHandler<AlarmEventArgs> AlarmUpdated;
-        public event EventHandler<AlarmEventArgs> AlarmStatusChanged;
+        public event EventHandler<AlarmEventArgs> OnAlarmAdd;
+        public event EventHandler<AlarmEventArgs> OnAlarmRemoval;
+        public event EventHandler<AlarmEventArgs> OnAlarmUpdate;
+        public event EventHandler<AlarmEventArgs> OnAlarmStatusChange;
 
         public double Interval
         {
@@ -51,6 +51,8 @@ namespace Alarmy.Core
             this.timer.Start();
             if (this.isStoppableRepository)
                 ((ISupportsStartStop)this.repository).Start();
+
+            this.Refresh();
         }
         public void Stop()
         {
@@ -67,8 +69,10 @@ namespace Alarmy.Core
             this.cache.Add(alarm.Id, alarm);
             this.repository.Add(alarm);
 
-            if (this.AlarmAdded != null)
-                this.AlarmAdded.Invoke(this, new AlarmEventArgs(alarm));
+            if (this.OnAlarmAdd != null)
+                this.OnAlarmAdd.Invoke(this, new AlarmEventArgs(alarm));
+
+            this.CheckAlarmStatus(alarm);
         }
 
         public void Remove(IAlarm alarm)
@@ -79,8 +83,8 @@ namespace Alarmy.Core
             this.cache.Remove(alarm.Id);
             this.repository.Remove(alarm);
 
-            if (this.AlarmRemoved != null)
-                this.AlarmRemoved.Invoke(this, new AlarmEventArgs(alarm));
+            if (this.OnAlarmRemoval != null)
+                this.OnAlarmRemoval.Invoke(this, new AlarmEventArgs(alarm));
         }
 
         public void Update(IAlarm alarm)
@@ -91,8 +95,10 @@ namespace Alarmy.Core
             this.cache[alarm.Id] = alarm;
             this.repository.Update(alarm);
 
-            if (this.AlarmUpdated != null)
-                this.AlarmUpdated.Invoke(this, new AlarmEventArgs(alarm));
+            if (this.OnAlarmUpdate != null)
+                this.OnAlarmUpdate.Invoke(this, new AlarmEventArgs(alarm));
+
+            this.CheckAlarmStatus(alarm);
         }
 
         public IEnumerable<IAlarm> List()
@@ -108,13 +114,18 @@ namespace Alarmy.Core
 
         private void _Timer_Elapsed(object sender, EventArgs e)
         {
+            this.Refresh();
+        }
+
+        private void Refresh()
+        {
             var alarms = this.repository.List().ToDictionary(x => x.Id);
 
             var deletedAlarmKeys = this.cache.Keys.Where(x => !alarms.ContainsKey(x)).ToArray();
             foreach (var key in deletedAlarmKeys)
             {
-                if (this.AlarmRemoved != null)
-                    this.AlarmRemoved.Invoke(this, new AlarmEventArgs(this.cache[key]));
+                if (this.OnAlarmRemoval != null)
+                    this.OnAlarmRemoval.Invoke(this, new AlarmEventArgs(this.cache[key]));
 
                 this.cache.Remove(key);
             }
@@ -128,23 +139,28 @@ namespace Alarmy.Core
                     {
                         cachedAlarm.Import(alarm);
 
-                        if (this.AlarmUpdated != null)
-                            this.AlarmUpdated.Invoke(this, new AlarmEventArgs(cachedAlarm));
+                        if (this.OnAlarmUpdate != null)
+                            this.OnAlarmUpdate.Invoke(this, new AlarmEventArgs(cachedAlarm));
                     }
                 }
                 else
                 {
                     cachedAlarm = alarm;
                     this.cache.Add(alarm.Id, cachedAlarm);
-                    if (this.AlarmAdded != null)
-                        this.AlarmAdded.Invoke(this, new AlarmEventArgs(cachedAlarm));
+                    if (this.OnAlarmAdd != null)
+                        this.OnAlarmAdd.Invoke(this, new AlarmEventArgs(cachedAlarm));
                 }
 
-                if (cachedAlarm.CheckStatusChange())
-                {
-                    if (this.AlarmStatusChanged != null)
-                        this.AlarmStatusChanged.Invoke(this, new AlarmEventArgs(cachedAlarm));
-                }
+                this.CheckAlarmStatus(cachedAlarm);
+            }
+        }
+
+        private void CheckAlarmStatus(IAlarm cachedAlarm)
+        {
+            if (cachedAlarm.CheckStatusChange())
+            {
+                if (this.OnAlarmStatusChange != null)
+                    this.OnAlarmStatusChange.Invoke(this, new AlarmEventArgs(cachedAlarm));
             }
         }
     }

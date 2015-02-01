@@ -85,10 +85,14 @@
     <Compile Include="Common\AlarmTests.cs" />
     <Compile Include="Core\FileAlarmRepository\FileAlarmRepositoryTests.cs" />
     <Compile Include="Infrastructure\ExtensionsTests.cs" />
+    <Compile Include="Utils\FakeAlarmService.cs" />
+    <Compile Include="Utils\FakeMainView.cs" />
     <Compile Include="Utils\InMemoryAlarmRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\AlarmServiceTests.cs" />
     <Compile Include="Core\FileAlarmRepository\FreshnessRepositoryFilterTests.cs" />
+    <Compile Include="Utils\FakeAlarm.cs" />
+    <Compile Include="ViewModels\MainViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Alarmy\Alarmy.csproj">

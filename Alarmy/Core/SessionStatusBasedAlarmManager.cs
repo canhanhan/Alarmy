@@ -6,14 +6,14 @@ namespace Alarmy.Core
 {
     internal class SessionStateBasedAlarmManager : IAlarmManager
     {
-        private readonly SessionStateProvider sessionStateProvider;
+        private readonly ISessionStateProvider sessionStateProvider;
 
         public event EventHandler OnSoundOff;
         public event EventHandler OnSoundOn;
         public event EventHandler OnSleep;
         public event EventHandler OnWakeup;
-                
-        public SessionStateBasedAlarmManager(SessionStateProvider sessionInformation)
+
+        public SessionStateBasedAlarmManager(ISessionStateProvider sessionInformation)
         {
             if (sessionInformation == null)
                 throw new ArgumentNullException("sessionInformation");

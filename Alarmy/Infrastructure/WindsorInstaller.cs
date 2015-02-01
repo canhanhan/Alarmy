@@ -9,10 +9,44 @@ using Castle.MicroKernel.Resolvers.SpecializedResolvers;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using System;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Alarmy.Infrastructure
 {
+    internal static class WindsorHelper
+    {
+        public static ComponentRegistration<TService> Settings<TService>(this ComponentRegistration<TService> config, params Expression<Func<Settings, object>>[] usedSettings)
+             where TService : class
+        {
+            return config.DynamicParameters((k, d) =>
+            {
+                var settings = k.Resolve<Settings>();
+                var serviceType = config.Implementation ?? typeof(TService);
+                var ctorArguments = serviceType.GetConstructors().Single().GetParameters();
+
+                foreach (var setting in usedSettings)
+                {
+                    var memberExpression = (MemberExpression)(setting.Body is UnaryExpression ? ((UnaryExpression)setting.Body).Operand : setting.Body);
+                    var target = ctorArguments.SingleOrDefault(x => x.ParameterType == ((PropertyInfo)memberExpression.Member).PropertyType);
+                    string targetName;
+                    if (target == null)
+                    {
+                        targetName = memberExpression.Member.Name;
+                        targetName = targetName.Substring(0, 1).ToLowerInvariant() + targetName.Substring(1);
+                    }
+                    else
+                    {
+                        targetName = target.Name;
+                    }
+
+                    d[targetName] = setting.Compile().Invoke(settings);
+                }
+            });
+        }
+    }
+
     public class WindsorInstaller : IWindsorInstaller
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
@@ -29,14 +63,14 @@ namespace Alarmy.Infrastructure
                 .For<IAlarmRepository>()
                 .ImplementedBy<FileAlarmRepository>()
                 .LifestyleSingleton()
-                .DynamicParameters((k, d) => d["path"] = k.Resolve<Settings>().AlarmDatabasePath)
+                .Settings(x => x.AlarmDatabasePath)
             );
 
             container.Register(Component
                 .For<IAlarmService>()
                 .ImplementedBy<AlarmService>()
                 .LifestyleSingleton()
-                .DynamicParameters((k, d) => d["repositoryRefreshIntervalInSeconds"] = k.Resolve<Settings>().RepositoryRefreshIntervalInSeconds)
+                .Settings(x => x.RepositoryRefreshIntervalInSeconds)
             );
 
             container.Register(Component
@@ -55,6 +89,7 @@ namespace Alarmy.Infrastructure
                 .For<IMainView, MainForm>()
                 .ImplementedBy<MainForm>()
                 .LifestyleSingleton()
+                .Settings(x => x.AlarmListGroupInterval)
             );
 
             container.Register(Component
@@ -68,16 +103,44 @@ namespace Alarmy.Infrastructure
                 .ImplementedBy<DateTimeProvider>()
                 .LifestyleSingleton()
             );
-
+            
             container.Register(
                 Classes.FromThisAssembly()
                 .IncludeNonPublicTypes()
                 .BasedOn<IRepositoryFilter>()
                 .WithServiceFirstInterface()
-                .Configure(x => x.DynamicParameters((k, d) =>
-                {
-                    d["freshnessInMinutes"] = k.Resolve<Settings>().FreshnessInMinutes;
-                }))
+                .Configure(x => x.Settings(y => y.FreshnessInMinutes))
+            );
+
+            container.Register(Component
+                .For<IFileWatcher>()
+                .ImplementedBy<ReliableFileSystemWatcher>()
+                .LifestyleSingleton()
+                .Settings(x => x.AlarmDatabasePath)
+            );
+
+            container.Register(Component
+                .For<IRepositorySerializer>()
+                .ImplementedBy<JsonRepositorySerializer>()
+                .LifestyleSingleton()
+            );
+
+            container.Register(Component
+                .For<ISharedFileFactory>()
+                .ImplementedBy<SharedFileFactory>()
+                .LifestyleSingleton()
+            );
+
+            container.Register(Component
+                .For<SoundPlayer>()
+                .LifestyleSingleton()
+                .Settings(x => x.AlarmSoundFile)
+            );
+
+            container.Register(Component
+                .For<ISessionStateProvider>()
+                .ImplementedBy<SessionStateProvider>()
+                .LifestyleSingleton()
             );
 
             container.Register(Component.For<MainViewModel>().LifestyleSingleton());

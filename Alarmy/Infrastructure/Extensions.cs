@@ -26,5 +26,17 @@ namespace Alarmy
             var doubleBufferPropertyInfo = control.GetType().GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
             doubleBufferPropertyInfo.SetValue(control, enable, null);
         }
+
+        public static void Invoke<T>(this EventHandler<T> handler, object sender = null, T e = null) where T: EventArgs
+        {
+            if (handler != null)
+                handler.Invoke(sender, e);
+        }
+
+        public static void Invoke(this EventHandler handler, object sender = null, EventArgs e = null) 
+        {
+            if (handler != null)
+                handler.Invoke(sender, e);
+        }
     }
 }

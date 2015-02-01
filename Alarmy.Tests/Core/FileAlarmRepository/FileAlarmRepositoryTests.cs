@@ -6,40 +6,13 @@ using Alarmy.Common;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using Alarmy.Tests.Utils;
 
 namespace Alarmy.Tests.Core
 {
     [TestClass]
     public class FileAlarmRepositoryTests
     {
-        private class TestAlarm : IAlarm
-        {
-            public Guid Id { get; set; }
-            public string Title { get; set; }
-            public AlarmStatus Status { get; set; }
-            public DateTime Time { get; set; }
-            public bool IsHushed { get; set; }
-            
-            public bool CanBeCanceled { get { return true; } }
-            public bool CanBeCompleted { get { return true; } }
-            public bool CanBeRinging { get { return true; } }
-            public bool CanBeSet { get { return true; } }
-            public bool CanBeMissed { get { return true; } }
-            public bool IsRinging { get { return true; } }
-
-            public TestAlarm()
-            {
-                this.Id = Guid.NewGuid();
-            }
-
-            public void SetTime(DateTime time) { }
-            public void Cancel() { }
-            public void Complete() { }
-            public bool CheckStatusChange() { return true; }
-            public bool Equals(IAlarm alarm, bool compareOnlyMetadata) { return true; }
-            public void Import(IAlarm alarm) {}
-        }
-
         private const string TEST_PATH = "TEST";
         private MemoryStream stream;
         private IFileWatcher watcher;
@@ -75,9 +48,18 @@ namespace Alarmy.Tests.Core
         }
 
         [TestMethod]
-        public void Add_AddsItems()
+        public void FileAlarmRepository_Start_ReadsAlarmsFromDisk()
         {
-            var alarm = new TestAlarm();
+            var alarm = new FakeAlarm();
+            var repository = this.CreateBlankRepository();
+
+            this.sharedFileFactory.ReceivedWithAnyArgs().Read(null);
+        }
+
+        [TestMethod]
+        public void FileAlarmRepository_Add_AddsItems()
+        {
+            var alarm = new FakeAlarm();
             var repository = this.CreateBlankRepository();
            
             repository.Add(alarm);
@@ -86,10 +68,10 @@ namespace Alarmy.Tests.Core
         }
 
         [TestMethod]
-        public void Add_AddsMultipleItems()
+        public void FileAlarmRepository_Add_AddsMultipleItems()
         {            
-            var alarm1= new TestAlarm();
-            var alarm2 = new TestAlarm();
+            var alarm1= new FakeAlarm();
+            var alarm2 = new FakeAlarm();
 
             var repository = this.CreateBlankRepository();
 
@@ -101,10 +83,10 @@ namespace Alarmy.Tests.Core
         }
 
         [TestMethod]
-        public void Add_DoesNotOverwriteExistingAlarms()
+        public void FileAlarmRepository_Add_DoesNotOverwriteExistingAlarms()
         {
-            var alarm1 = new TestAlarm();
-            var alarm2 = new TestAlarm();
+            var alarm1 = new FakeAlarm();
+            var alarm2 = new FakeAlarm();
             this.storage.Add(alarm1.Id, alarm1);
 
             var repository = this.CreateBlankRepository();
@@ -116,10 +98,10 @@ namespace Alarmy.Tests.Core
         }
 
         [TestMethod]
-        public void Add_OverwritesExistingAlarmsWithSameGuid()
+        public void FileAlarmRepository_Add_OverwritesExistingAlarmsWithSameGuid()
         {
-            var alarm1 = new TestAlarm();
-            var alarm2 = new TestAlarm();
+            var alarm1 = new FakeAlarm();
+            var alarm2 = new FakeAlarm();
             alarm2.Id = alarm1.Id;
             this.storage.Add(alarm1.Id, alarm1);
 
@@ -132,10 +114,10 @@ namespace Alarmy.Tests.Core
         }
 
         [TestMethod]
-        public void Update_ChangesItems()
+        public void FileAlarmRepository_Update_ChangesItems()
         {
-            var existingAlarm = new TestAlarm { Title = "Before" };
-            var duplicateAlarm = new TestAlarm { Title = "After", Id = existingAlarm.Id };
+            var existingAlarm = new FakeAlarm { Title = "Before" };
+            var duplicateAlarm = new FakeAlarm { Title = "After", Id = existingAlarm.Id };
             this.storage.Add(existingAlarm.Id, existingAlarm);
             var repository = this.CreateBlankRepository();
 
@@ -146,9 +128,9 @@ namespace Alarmy.Tests.Core
 
 
         [TestMethod]
-        public void List_ReturnsAlarms()
+        public void FileAlarmRepository_List_ReturnsAlarms()
         {
-            var alarm1 = new TestAlarm();
+            var alarm1 = new FakeAlarm();
             this.storage.Add(alarm1.Id, alarm1);
             var repository = this.CreateBlankRepository();
 
@@ -159,10 +141,10 @@ namespace Alarmy.Tests.Core
         }
 
         [TestMethod]
-        public void List_DoesNotReturnFilteredOutAlarms()
+        public void FileAlarmRepository_List_DoesNotReturnFilteredOutAlarms()
         {
-            var alarm1 = new TestAlarm();
-            var alarm2 = new TestAlarm();
+            var alarm1 = new FakeAlarm();
+            var alarm2 = new FakeAlarm();
             var filter = Substitute.For<IRepositoryFilter>();
             filter.Match(alarm1).Returns(true);
             filter.Match(alarm2).Returns(false);
@@ -178,10 +160,10 @@ namespace Alarmy.Tests.Core
         }
 
         [TestMethod]
-        public void Remove_DeletesItems()
+        public void FileAlarmRepository_Remove_DeletesItems()
         {
-            var alarm1 = new TestAlarm();
-            var alarm2 = new TestAlarm();
+            var alarm1 = new FakeAlarm();
+            var alarm2 = new FakeAlarm();
             this.storage.Add(alarm1.Id, alarm1);
             this.storage.Add(alarm2.Id, alarm2);
             var repository = this.CreateBlankRepository();

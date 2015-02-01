@@ -309,5 +309,24 @@ namespace Alarmy.Tests
             Assert.AreEqual(AlarmStatus.Completed, this.alarm.Status);
         }
         #endregion
+
+        [TestMethod]
+        public void IsRinging_ReturnsFalse_WhenRingingAndNotHushed()
+        {
+            this.alarm.Status = AlarmStatus.Ringing;
+            this.alarm.IsHushed = false;
+
+            Assert.IsTrue(this.alarm.IsRinging);
+        }
+
+        [TestMethod]
+        public void IsRinging_ReturnsFalse_WhenRingingButHushed()
+        {
+            this.alarm.Status = AlarmStatus.Ringing;
+            this.alarm.IsHushed = true;
+
+            Assert.IsFalse(this.alarm.IsRinging);
+        }
+
     }
 }

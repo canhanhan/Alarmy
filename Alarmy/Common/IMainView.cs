@@ -4,29 +4,37 @@ namespace Alarmy.Common
 {
     internal interface IMainView
     {
+        event EventHandler OnNewRequest;
         event EventHandler<AlarmEventArgs> OnCancelRequest;
         event EventHandler<AlarmEventArgs> OnChangeRequest;
         event EventHandler<AlarmEventArgs> OnCompleteRequest;
         event EventHandler<AlarmEventArgs> OnHushRequest;
-        event EventHandler OnNewRequest;
-        event EventHandler OnEnableSoundChange;
-        event EventHandler OnPopupOnAlarmChange;
-        event EventHandler OnSmartAlarmChange;
+        event EventHandler<AlarmEventArgs> OnUnhushRequest;
+        event EventHandler OnEnableSoundRequest;
+        event EventHandler OnDisableSoundRequest;
+        event EventHandler OnPopupOnAlarmOn;
+        event EventHandler OnPopupOnAlarmOff;
+        event EventHandler OnSmartAlarmOn;
+        event EventHandler OnSmartAlarmOff;
         event EventHandler OnHideRequest;
+        event EventHandler OnShowRequest;
         event EventHandler OnExitRequest;
         event EventHandler OnLoad;
         event EventHandler OnClosing;
 
-        bool EnableSound { get; set; }
+        bool Visible { get; }
+        bool SoundEnabled { get; set; }
         bool PopupOnAlarm { get; set; }
-        bool SmartAlarm { get; set; }        
-        bool Visible { get; set; }
+        bool SmartAlarm { get; set; }  
+
+        string AskCancelReason(IAlarm alarm);
+        AlarmMetadata AskAlarmMetadata(IAlarm alarm = null);
 
         void Show();
         void Hide();
 
-        string AskCancelReason(IAlarm alarm);
-        AlarmMetadata AskAlarmMetadata(IAlarm alarm = null);
+        void PlayAlarm();
+        void StopAlarm();
 
         void AddAlarm(IAlarm alarm);
         void RemoveAlarm(IAlarm alarm);

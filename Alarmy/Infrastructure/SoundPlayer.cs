@@ -1,8 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Alarmy.Infrastructure
 {
-    internal class SoundPlayer : IDisposable
+    internal class SoundPlayer : Component, IDisposable
     {
         private readonly System.Media.SoundPlayer soundPlayer;
 
@@ -19,6 +20,7 @@ namespace Alarmy.Infrastructure
         {
             if (this.IsPlaying)
                 return;
+
             this.IsPlaying = true;
 
             if (!this.soundPlayer.IsLoadCompleted)
@@ -33,12 +35,14 @@ namespace Alarmy.Infrastructure
             this.soundPlayer.Stop();
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
             if (this.soundPlayer != null)
             {
                 this.soundPlayer.Dispose();
             }
-        }
+
+            base.Dispose(disposing);
+        }   
     }
 }

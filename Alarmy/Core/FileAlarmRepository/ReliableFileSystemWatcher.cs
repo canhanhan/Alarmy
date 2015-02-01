@@ -13,7 +13,10 @@ namespace Alarmy.Core.FileAlarmRepository
 
         public ReliableFileSystemWatcher(ITimer timer, string path)
         {
-            this.fileSystemWatcher = new FileSystemWatcher(path);
+            var parentPath = Path.GetDirectoryName(path);
+            var file = Path.GetFileName(path);
+
+            this.fileSystemWatcher = new FileSystemWatcher(parentPath, file);
             this.fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
             this.fileSystemWatcher.Changed += fileSystemWatcher_Changed;
 

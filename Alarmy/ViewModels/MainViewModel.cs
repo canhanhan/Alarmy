@@ -8,20 +8,47 @@ using System.Windows.Forms;
 
 namespace Alarmy.ViewModels
 {
-    internal class MainViewModel :IDisposable
+    internal class MainViewModel
     {
-        private readonly IAlarmManager alarmManager;
-        private readonly SoundPlayer soundPlayer;
+        private readonly IAlarmManager alarmManager;        
         private readonly IAlarmService alarmService;
         private readonly IAlarmFactory alarmFactory;
         private readonly IMainView view;
         private readonly Settings settings;
 
+        private bool isAlarmRinging;
         private bool smartAlarmEnabled;
-        private bool smartAlarmMute;
         private bool soundEnabled;
         private bool popupOnAlarmEnabled;
 
+        private bool SmartAlarmEnabled
+        {
+            get { return this.smartAlarmEnabled; }
+            set 
+            {
+                this.smartAlarmEnabled = value;
+                this.view.SmartAlarm = value;
+            }
+        }
+        private bool SoundEnabled
+        {
+            get { return this.soundEnabled; }
+            set
+            {
+                this.soundEnabled = value;
+                this.view.SoundEnabled = value;
+            }
+        }        
+        private bool PopupOnAlarmEnabled
+        {
+            get { return this.popupOnAlarmEnabled; }
+            set
+            {
+                this.popupOnAlarmEnabled = value;
+                this.view.PopupOnAlarm = value;
+            }
+        }
+                
         private ILogger logger = NullLogger.Instance;
         
         public ILogger Logger
@@ -41,112 +68,119 @@ namespace Alarmy.ViewModels
             this.alarmFactory = alarmFactory;
             this.settings = settings;
 
-            this.popupOnAlarmEnabled = this.settings.PopupOnAlarm;
-            this.soundEnabled = this.settings.EnableSound;
-            this.smartAlarmEnabled = this.settings.SmartAlarm;
-
             this.view = view;
-            this.view.OnLoad += view_Load;
-            this.view.OnClosing += view_Closing;
+            this.view.OnLoad += view_OnLoad;
+            this.view.OnClosing += view_OnClosing;
             this.view.OnHideRequest += view_OnHideRequest;
+            this.view.OnShowRequest += view_OnShowRequest;
             this.view.OnExitRequest += view_OnExitRequest;
             this.view.OnHushRequest += view_OnHushRequest;
+            this.view.OnUnhushRequest += view_OnUnhushRequest;
             this.view.OnCompleteRequest += view_OnCompleteRequest;
             this.view.OnCancelRequest += view_OnCancelRequest;
             this.view.OnChangeRequest += view_OnChangeRequest;
             this.view.OnNewRequest += view_OnNewRequest;
-            this.view.OnEnableSoundChange += view_OnEnableSoundChange;
-            this.view.OnPopupOnAlarmChange += view_OnPopupOnAlarmChange;
-            this.view.OnSmartAlarmChange += view_OnSmartAlarmChange;
+            this.view.OnEnableSoundRequest += view_OnEnableSound;
+            this.view.OnDisableSoundRequest += view_OnDisableSound;
+            this.view.OnPopupOnAlarmOn += view_OnPopupOnAlarmOn;
+            this.view.OnPopupOnAlarmOff += view_OnPopupOnAlarmOff;
+            this.view.OnSmartAlarmOn += view_OnSmartAlarmOn;
+            this.view.OnSmartAlarmOff += view_OnSmartAlarmOff;
 
             this.alarmService = alarmService;
-            this.alarmService.AlarmAdded += alarmService_AlarmAdded;
-            this.alarmService.AlarmRemoved += alarmService_AlarmRemoved;
-            this.alarmService.AlarmUpdated += alarmService_AlarmUpdated;
-            this.alarmService.AlarmStatusChanged += alarmService_AlarmStatusChanged;
-
-            soundPlayer = new SoundPlayer(settings.AlarmSoundFile);
+            this.alarmService.OnAlarmAdd += alarmService_OnAlarmAdd;
+            this.alarmService.OnAlarmRemoval += alarmService_OnAlarmRemoval;
+            this.alarmService.OnAlarmUpdate += alarmService_OnAlarmUpdate;
+            this.alarmService.OnAlarmStatusChange += alarmService_OnAlarmStatusChange;           
 
             this.alarmManager = alarmManager;
             this.alarmManager.OnSleep += alarmManager_OnSleep;
             this.alarmManager.OnWakeup += alarmManager_OnWakeup;
             this.alarmManager.OnSoundOn += alarmManager_OnSoundOn;
             this.alarmManager.OnSoundOff += alarmManager_OnSoundOff;
+
+            this.PopupOnAlarmEnabled = this.settings.PopupOnAlarm;
+            this.SoundEnabled = this.settings.EnableSound;
+            this.SmartAlarmEnabled = this.settings.SmartAlarm;
         }
 
-        public void Dispose()
+        private void CheckForAlarms()
         {
-            if (this.soundPlayer != null)
-                this.soundPlayer.Dispose();
-        }
-
-        private void CheckForAlarmSound()
-        {
-            if (this.IsAlarmAllowed() && this.AnyRingingAlarms())
+            if (!this.view.Visible && this.AnyRingingAlarms(includeMissed: true))
             {
-                if (!this.soundPlayer.IsPlaying)
-                {
+                Logger.Info("View is shown...");
+                this.view.Show();
+            }
+
+            if (this.SoundEnabled && this.AnyRingingAlarms())
+            {               
+                if (!this.isAlarmRinging)
+                {                    
                     Logger.Info("Alarm is ringing...");
-                    this.soundPlayer.Play();
+                    this.isAlarmRinging = true;
+                    this.view.PlayAlarm();
                 }                    
             }
-            else if (this.soundPlayer.IsPlaying)
+            else if (this.isAlarmRinging)
             {
-                    Logger.Info("Alarm is not ringing...");
-                    this.soundPlayer.Stop();
+                Logger.Info("Alarm is not ringing...");
+                this.isAlarmRinging = false;
+                this.view.StopAlarm();
             }
         }
 
-        private bool IsAlarmAllowed()
+        private bool AnyRingingAlarms(bool includeMissed=false)
         {
-            return this.soundEnabled && !(this.smartAlarmEnabled && this.smartAlarmMute);
+            return this.alarmService.List().Any(alarm => alarm.IsRinging || (includeMissed && alarm.Status == AlarmStatus.Missed));
         }
 
-        private bool AnyRingingAlarms()
+        private void Wakeup()
         {
-            return this.alarmService.List().Any(alarm => alarm.IsRinging);
+            this.alarmService.Start();
+            this.CheckForAlarms();
         }
 
         #region View Events
-        private void view_OnSmartAlarmChange(object sender, EventArgs e)
+        private void view_OnSmartAlarmOff(object sender, EventArgs e)
         {
-            this.smartAlarmEnabled = this.view.SmartAlarm;
-            if (this.view.SmartAlarm)
-            {
-                Logger.Info("Smart alarm is enabled.");
-            }
-            else
-            {
-                Logger.Info("Smart alarm is disabled");
-            }
+            Logger.Info("Smart alarm is disabled.");
+            this.SmartAlarmEnabled = false;
+            this.soundEnabled = this.view.SoundEnabled;
+            this.Wakeup();
         }
 
-        private void view_OnPopupOnAlarmChange(object sender, EventArgs e)
+        private void view_OnSmartAlarmOn(object sender, EventArgs e)
         {
-            this.popupOnAlarmEnabled = this.view.PopupOnAlarm;
-            if (this.view.PopupOnAlarm)
-            {
-                Logger.Info("List is set to popup on alarm");
-            }
-            else
-            {
-                Logger.Info("List is set not to popup on alarm");
-            }
+            Logger.Info("Smart alarm is enabled.");
+            this.SmartAlarmEnabled = true;
         }
 
-        private void view_OnEnableSoundChange(object sender, EventArgs e)
+        private void view_OnPopupOnAlarmOff(object sender, EventArgs e)
         {
-            this.soundEnabled = this.view.EnableSound;
-            if (this.view.EnableSound)
-            {
-                Logger.Info("Sound is enabled.");
-            }
-            else
-            {
-                Logger.Info("Sound is disabled.");
-            }
+            Logger.Info("List is set not to popup on alarm");
+            this.PopupOnAlarmEnabled = false;
+        }
 
-            this.CheckForAlarmSound();
+        private void view_OnPopupOnAlarmOn(object sender, EventArgs e)
+        {
+            Logger.Info("List is set to popup on alarm");
+            this.PopupOnAlarmEnabled = true;
+        }
+
+        private void view_OnDisableSound(object sender, EventArgs e)
+        {
+            Logger.Info("Sound is disabled.");
+            this.SoundEnabled = false;
+
+            this.CheckForAlarms();
+        }
+
+        private void view_OnEnableSound(object sender, EventArgs e)
+        {
+            Logger.Info("Sound is enabled.");
+            this.SoundEnabled = true;
+
+            this.CheckForAlarms();
         }
 
         private void view_OnNewRequest(object sender, EventArgs e)
@@ -203,17 +237,16 @@ namespace Alarmy.ViewModels
         private void view_OnHushRequest(object sender, AlarmEventArgs e)
         {
             var alarm = e.Alarm;
-            if (alarm.IsHushed)
-            {
-                Logger.Info(alarm + " is un-hushed.");
-                alarm.IsHushed = false;
-            }
-            else
-            {
-                Logger.Info(alarm + " is hushed.");
-                alarm.IsHushed = true;
-            }
+            Logger.Info(alarm + " is hushed.");
+            alarm.IsHushed = true;
+            this.alarmService.Update(alarm);
+        }
 
+        private void view_OnUnhushRequest(object sender, AlarmEventArgs e)
+        {
+            var alarm = e.Alarm;
+            Logger.Info(alarm + " is un-hushed.");
+            alarm.IsHushed = false;
             this.alarmService.Update(alarm);
         }
 
@@ -222,37 +255,36 @@ namespace Alarmy.ViewModels
             Application.Exit();
         }
 
+        private void view_OnShowRequest(object sender, EventArgs e)
+        {
+            Logger.Info("List is visible.");
+            this.view.Show();
+
+        }
+
         private void view_OnHideRequest(object sender, EventArgs e)
         {
-            if (this.view.Visible)
-            {
-                Logger.Info("List is hidden.");
-                this.view.Hide();
-            }
-            else
-            {
-                Logger.Info("List is visible.");
-                this.view.Show();
-            }
+            Logger.Info("List is hidden.");
+            this.view.Hide();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", MessageId = "System.Threading.Timer")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        private void view_Load(object sender, EventArgs e)
+        private void view_OnLoad(object sender, EventArgs e)
         {
-            this.view.PopupOnAlarm = this.popupOnAlarmEnabled;
-            this.view.EnableSound = this.soundEnabled;
-            this.view.SmartAlarm = this.smartAlarmEnabled;
+            this.view.PopupOnAlarm = this.PopupOnAlarmEnabled;
+            this.view.SoundEnabled = this.SoundEnabled;
+            this.view.SmartAlarm = this.SmartAlarmEnabled;
 
             this.alarmService.Start();
 
             if (this.settings.StartHidden)
             {
-                new System.Threading.Timer((_) => this.view_OnHideRequest(null, null), null, 100, System.Threading.Timeout.Infinite);
+                this.view_OnHideRequest(null, null);                
             }
         }
 
-        private void view_Closing(object sender, EventArgs e)
+        private void view_OnClosing(object sender, EventArgs e)
         {
             Logger.Info("Closing...");
             this.alarmService.Stop();
@@ -260,56 +292,68 @@ namespace Alarmy.ViewModels
         #endregion
 
         #region Alarm service Events
-        private void alarmService_AlarmUpdated(object sender, AlarmEventArgs e)
+        private void alarmService_OnAlarmUpdate(object sender, AlarmEventArgs e)
         {
             this.view.UpdateAlarm(e.Alarm);
-            this.CheckForAlarmSound();
+            this.CheckForAlarms();
         }
 
-        private void alarmService_AlarmRemoved(object sender, AlarmEventArgs e)
+        private void alarmService_OnAlarmRemoval(object sender, AlarmEventArgs e)
         {
             this.view.RemoveAlarm(e.Alarm);
-            this.CheckForAlarmSound();
+            this.CheckForAlarms();
         }
 
-        private void alarmService_AlarmAdded(object sender, AlarmEventArgs e)
+        private void alarmService_OnAlarmAdd(object sender, AlarmEventArgs e)
         {
             this.view.AddAlarm(e.Alarm);
-            this.CheckForAlarmSound();
+            this.CheckForAlarms();
         }
 
-        private void alarmService_AlarmStatusChanged(object sender, AlarmEventArgs e)
+        private void alarmService_OnAlarmStatusChange(object sender, AlarmEventArgs e)        
         {
-            if ((e.Alarm.Status == AlarmStatus.Ringing || e.Alarm.Status == AlarmStatus.Missed) && !this.view.Visible)
-            {
-                this.view.Show();
-            }
-
-            this.alarmService_AlarmUpdated(this, new AlarmEventArgs(e.Alarm));
+            this.view.UpdateAlarm(e.Alarm);
+            this.CheckForAlarms();
         }
         #endregion
 
         #region AlarmManager Events
         private void alarmManager_OnSoundOn(object sender, EventArgs e)
         {
-            this.smartAlarmMute = false;
-            this.CheckForAlarmSound();
+            if (!this.smartAlarmEnabled)
+                return; 
+
+            Logger.Info("Smart Alarm sent sound on");
+            if (this.view.SoundEnabled)
+                this.soundEnabled = true;
+
+            this.CheckForAlarms();
         }
 
         private void alarmManager_OnSoundOff(object sender, EventArgs e)
         {
-            this.smartAlarmMute = true;
-            this.CheckForAlarmSound();
+            if (!this.smartAlarmEnabled)
+                return; 
+
+            Logger.Info("Smart Alarm sent sound off");
+            this.soundEnabled = false;
+            this.CheckForAlarms();
         }
 
         private void alarmManager_OnWakeup(object sender, EventArgs e)
         {
+            if (!this.smartAlarmEnabled)
+                return; 
+
             Logger.Info("Smart Alarm sent wakeup");
-            this.alarmService.Start();            
+            this.Wakeup();
         }
 
         private void alarmManager_OnSleep(object sender, EventArgs e)
         {
+            if (!this.smartAlarmEnabled)
+                return; 
+
             Logger.Info("Smart Alarm sent sleep");
             this.alarmService.Stop();
         }

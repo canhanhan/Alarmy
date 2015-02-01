@@ -39,13 +39,12 @@ namespace Alarmy.Core.FileAlarmRepository
 
             this.watcher = watcher;
             this.watcher.FileChanged += watcher_FileChanged;
-
-            this.watcher_FileChanged(null, null);
         }
 
         public void Start()
         {
             this.watcher.Start();
+            this.watcher_FileChanged(null, null);
         }
 
         public void Stop()
@@ -75,7 +74,7 @@ namespace Alarmy.Core.FileAlarmRepository
 
         private void GetAlarms(Stream stream, bool filter = true)
         {
-            this.alarmsCache = this.serializer.Deserialize(stream);
+            this.alarmsCache = this.serializer.Deserialize(stream) ?? new Dictionary<Guid, IAlarm>();
 
             if (filter)
                 this.FilterAlarms();

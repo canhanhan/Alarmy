@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Alarmy.Tests
 {
-    internal class InMemoryAlarmRepository : IAlarmRepository
+    internal abstract class InMemoryAlarmRepository : IAlarmRepository, ISupportsStartStop
     {
         private readonly Dictionary<Guid, IAlarm> alarms;
 
@@ -32,5 +32,8 @@ namespace Alarmy.Tests
         {
             Add(alarm);
         }
+
+        public abstract void Start();
+        public abstract void Stop();
     }
 }

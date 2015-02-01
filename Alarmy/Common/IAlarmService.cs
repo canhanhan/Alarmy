@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace Alarmy.Common
 {
-    internal interface IAlarmService : IDisposable
+    internal interface IAlarmService : IDisposable, ISupportsStartStop
     {
-        event EventHandler<AlarmEventArgs> AlarmStatusChanged;
-        event EventHandler<AlarmEventArgs> AlarmAdded;
-        event EventHandler<AlarmEventArgs> AlarmRemoved;
-        event EventHandler<AlarmEventArgs> AlarmUpdated;
+        event EventHandler<AlarmEventArgs> OnAlarmStatusChange;
+        event EventHandler<AlarmEventArgs> OnAlarmAdd;
+        event EventHandler<AlarmEventArgs> OnAlarmRemoval;
+        event EventHandler<AlarmEventArgs> OnAlarmUpdate;
 
         double Interval { get; set; }
         void Start();
