@@ -18,7 +18,9 @@ namespace Alarmy.Views
         }
         private readonly double alarmListGroupInterval;
         private readonly SoundPlayer soundPlayer;
+        private readonly System.Windows.Forms.Timer visibilityTimer;
 
+        private bool shouldBeVisible;
         private bool soundEnabled;
 
         public new event EventHandler OnLoad;
@@ -49,6 +51,8 @@ namespace Alarmy.Views
             this.notifyIcon1.Text = Text;
             this.notifyIcon1.Icon = Icon;
 
+            this.visibilityTimer = new System.Windows.Forms.Timer(this.components);
+            this.visibilityTimer.Tick += visibilityTimer_Tick;
             this.components.Add(this.soundPlayer);
         }
 
@@ -98,14 +102,14 @@ namespace Alarmy.Views
 
         public new void Show()
         {
-            //FIXME: Dirty hack. Delayed visibility because form might be still loading when this command is called.
-            new System.Threading.Timer((_) => this.InvokeIfNecessary(base.Show), null, 100, System.Threading.Timeout.Infinite);
+            this.shouldBeVisible = true;
+            this.InvokeIfNecessary(this.visibilityTimer.Start);
         }
 
         public new void Hide()
         {
-            //FIXME: Dirty hack. Delayed visibility because form might be still loading when this command is called.
-            new System.Threading.Timer((_) => this.InvokeIfNecessary(base.Hide), null, 100, System.Threading.Timeout.Infinite);
+            this.shouldBeVisible = false;
+            this.InvokeIfNecessary(this.visibilityTimer.Start);
         }
 
         public string AskCancelReason(IAlarm alarm)
@@ -192,6 +196,17 @@ namespace Alarmy.Views
         public void StopAlarm()
         {
             this.soundPlayer.Stop();
+        }
+
+        private void visibilityTimer_Tick(object sender, EventArgs e)
+        {
+            if (this.Visible == this.shouldBeVisible)
+            {
+                this.visibilityTimer.Stop();
+                return;
+            }
+
+            this.Visible = this.shouldBeVisible;
         }
 
         private ListViewItem GetAlarmItem(IAlarm alarm)

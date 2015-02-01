@@ -24,8 +24,10 @@ namespace Alarmy.Tests.Core
 
         private IAlarmRepository CreateBlankRepository(params IRepositoryFilter[] filters)
         {
-            //var repositoryFilters = new IRepositoryFilter[0];
-            return new FileAlarmRepository(this.watcher, this.sharedFileFactory, this.serializer, filters, TEST_PATH);
+            var repository = new FileAlarmRepository(this.watcher, this.sharedFileFactory, this.serializer, filters, TEST_PATH);
+            repository.Start();
+
+            return repository;
         }
 
         [TestInitialize]
