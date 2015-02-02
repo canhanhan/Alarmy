@@ -29,16 +29,16 @@ namespace Alarmy.Infrastructure
                 foreach (var setting in usedSettings)
                 {
                     var memberExpression = (MemberExpression)(setting.Body is UnaryExpression ? ((UnaryExpression)setting.Body).Operand : setting.Body);
-                    var target = ctorArguments.SingleOrDefault(x => x.ParameterType == ((PropertyInfo)memberExpression.Member).PropertyType);
+                    var target = ctorArguments.Where(x => x.ParameterType == ((PropertyInfo)memberExpression.Member).PropertyType).ToArray();
                     string targetName;
-                    if (target == null)
+                    if (target.Length == 1)
                     {
-                        targetName = memberExpression.Member.Name;
-                        targetName = targetName.Substring(0, 1).ToLowerInvariant() + targetName.Substring(1);
+                        targetName = target[0].Name;
                     }
                     else
                     {
-                        targetName = target.Name;
+                        targetName = memberExpression.Member.Name;
+                        targetName = targetName.Substring(0, 1).ToLowerInvariant() + targetName.Substring(1);
                     }
 
                     d[targetName] = setting.Compile().Invoke(settings);
@@ -70,13 +70,13 @@ namespace Alarmy.Infrastructure
                 .For<IAlarmService>()
                 .ImplementedBy<AlarmService>()
                 .LifestyleSingleton()
-                .Settings(x => x.RepositoryRefreshIntervalInSeconds)
+                .Settings(x => x.CheckInterval)
             );
 
             container.Register(Component
                 .For<ITimer>()
                 .ImplementedBy<Timer>()
-                .LifestyleSingleton()
+                .LifestyleTransient()
             );
 
             container.Register(Component
@@ -140,6 +140,12 @@ namespace Alarmy.Infrastructure
             container.Register(Component
                 .For<ISessionStateProvider>()
                 .ImplementedBy<SessionStateProvider>()
+                .LifestyleSingleton()
+            );
+
+            container.Register(Component
+                .For<IImporter>()
+                .ImplementedBy<CSVImporter>()
                 .LifestyleSingleton()
             );
 

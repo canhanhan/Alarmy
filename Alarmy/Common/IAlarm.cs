@@ -20,7 +20,6 @@ namespace Alarmy.Common
         bool IsRinging { get; }
         bool CheckStatusChange();
 
-        bool Equals(IAlarm alarm, bool compareOnlyMetadata);
         void Import(IAlarm alarm);
     }
 }

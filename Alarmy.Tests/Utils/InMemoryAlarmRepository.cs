@@ -8,9 +8,11 @@ namespace Alarmy.Tests
     {
         private readonly Dictionary<Guid, IAlarm> alarms;
 
+        public bool IsDirty { get { return true; } }
+
         public InMemoryAlarmRepository()
         {
-            alarms = new Dictionary<Guid, IAlarm>();
+            alarms = new Dictionary<Guid, IAlarm>();            
         }
 
         public IEnumerable<IAlarm> List()
@@ -34,6 +36,6 @@ namespace Alarmy.Tests
         }
 
         public abstract void Start();
-        public abstract void Stop();
+        public abstract void Stop();       
     }
 }

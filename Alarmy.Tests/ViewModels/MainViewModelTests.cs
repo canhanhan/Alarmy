@@ -14,6 +14,7 @@ namespace Alarmy.Tests.ViewModels
         private FakeAlarmService alarmService;
         private IAlarmManager alarmManager;
         private IAlarmFactory alarmFactory;
+        private IImporter importer;
         private Settings settings;
         private MainViewModel viewModel;
 
@@ -24,8 +25,9 @@ namespace Alarmy.Tests.ViewModels
             this.alarmService = Substitute.For<FakeAlarmService>();
             this.alarmManager = Substitute.For<IAlarmManager>();
             this.alarmFactory = Substitute.For<IAlarmFactory>();
+            this.importer = Substitute.For<IImporter>();
             this.settings = new Settings();
-            this.viewModel = new MainViewModel(this.view, this.alarmService, this.alarmManager, this.alarmFactory, this.settings);
+            this.viewModel = new MainViewModel(this.view, this.alarmService, this.alarmManager, this.alarmFactory, this.importer, this.settings);
         }
 
         [TestMethod]

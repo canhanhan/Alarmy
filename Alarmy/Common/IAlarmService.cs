@@ -10,9 +10,7 @@ namespace Alarmy.Common
         event EventHandler<AlarmEventArgs> OnAlarmRemoval;
         event EventHandler<AlarmEventArgs> OnAlarmUpdate;
 
-        double Interval { get; set; }
-        void Start();
-        void Stop();
+        IDictionary<Guid, IAlarm> Cache { get; }
 
         void Add(IAlarm alarm);
         void Remove(IAlarm alarm);

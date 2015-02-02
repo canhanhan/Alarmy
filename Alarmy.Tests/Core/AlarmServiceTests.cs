@@ -25,8 +25,7 @@ namespace Alarmy.Tests
 
         private void TickTimer()
         {
-            var type = this.service.GetType();
-            type.GetMethod("_Timer_Elapsed", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(this.service, new object[] { null, null });
+            this.timer.Elapsed += Raise.Event();
         }
 
         [TestInitialize]
@@ -218,10 +217,31 @@ namespace Alarmy.Tests
 
             this.repository.Update(alarm);
             this.TickTimer();
-
+            
             Assert.AreEqual(1, triggerCount);
             Assert.AreSame(alarm, args.Alarm);
         }
+
+        [TestMethod]
+        public void AlarmService_Timer_TriggersEvent_WhenAlarmStatusUpdatedInRepository()
+        {
+            var alarm = GetAlarm(AlarmStatus.Ringing);
+            this.service.Add(alarm);
+            alarm.Status.Returns(AlarmStatus.Completed);
+            var triggerCount = 0;
+            AlarmEventArgs args = null;
+            this.service.OnAlarmUpdate += (_, e) =>
+            {
+                triggerCount++;
+                args = e;
+            };
+
+            this.repository.Update(alarm);
+            this.TickTimer();
+
+            Assert.AreEqual(1, triggerCount);
+            Assert.AreSame(alarm, args.Alarm);
+        }        
 
         [TestMethod]
         public void AlarmService_Timer_TriggersEvent_WhenAlarmAddedToRepository()
@@ -278,13 +298,12 @@ namespace Alarmy.Tests
             this.service.OnAlarmRemoval += (_, e) => alarmRemoved = true;
             this.service.OnAlarmStatusChange += (_, e) => alarmStatusChanged = true;
 
-            alarm.Equals(alarm, true).Returns(true);
             alarm.CheckStatusChange().Returns(true);
             this.repository.Update(alarm);
             this.TickTimer();
 
             Assert.IsFalse(alarmAdded);
-            Assert.IsFalse(alarmUpdated);
+            Assert.IsTrue(alarmUpdated);
             Assert.IsFalse(alarmRemoved);
             Assert.IsTrue(alarmStatusChanged);
         }
@@ -351,7 +370,6 @@ namespace Alarmy.Tests
             this.service.OnAlarmRemoval += (_, e) => alarmRemoved = true;
             this.service.OnAlarmStatusChange += (_, e) => alarmStatusChanged = true;
 
-            alarm.Equals(alarm, true).Returns(false);
             this.TickTimer();
 
             Assert.IsFalse(alarmAdded);

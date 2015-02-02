@@ -8,14 +8,15 @@ namespace Alarmy.Core.FileAlarmRepository
 {
     internal class FileAlarmRepository : IAlarmRepository, ISupportsStartStop
     {
-        private readonly string path;
-        
+        private readonly string path;        
         private readonly IRepositoryFilter[] filters;
         private readonly ISharedFileFactory sharedFileFactory;
         private readonly IFileWatcher watcher;
         private readonly IRepositorySerializer serializer;
 
         private IDictionary<Guid, IAlarm> alarmsCache;
+
+        public bool IsDirty { get; private set; }
 
         public FileAlarmRepository(IFileWatcher watcher, ISharedFileFactory sharedFileFactory, IRepositorySerializer serializer, IRepositoryFilter[] filters, string path)
         {
@@ -54,6 +55,8 @@ namespace Alarmy.Core.FileAlarmRepository
 
         public IEnumerable<IAlarm> List()
         {
+            this.IsDirty = false;
+
             return this.alarmsCache.Values;
         }
 
@@ -89,6 +92,8 @@ namespace Alarmy.Core.FileAlarmRepository
 
                 operation.Invoke(this.alarmsCache);
 
+                this.FilterAlarms();
+
                 this.serializer.Serialize(this.alarmsCache, file.Stream);
             }
         }
@@ -108,6 +113,8 @@ namespace Alarmy.Core.FileAlarmRepository
 
         private void watcher_FileChanged(object sender, EventArgs e)
         {
+            this.IsDirty = true;
+
             using (var sharedFile = this.sharedFileFactory.Read(this.path))
             {
                 this.GetAlarms(sharedFile.Stream);

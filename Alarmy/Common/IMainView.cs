@@ -5,6 +5,7 @@ namespace Alarmy.Common
     internal interface IMainView
     {
         event EventHandler OnNewRequest;
+        event EventHandler OnImportRequest;
         event EventHandler<AlarmEventArgs> OnCancelRequest;
         event EventHandler<AlarmEventArgs> OnChangeRequest;
         event EventHandler<AlarmEventArgs> OnCompleteRequest;
@@ -29,6 +30,7 @@ namespace Alarmy.Common
 
         string AskCancelReason(IAlarm alarm);
         AlarmMetadata AskAlarmMetadata(IAlarm alarm = null);
+        ImportContext AskImport();
 
         void Show();
         void Hide();

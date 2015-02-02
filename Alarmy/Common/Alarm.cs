@@ -130,19 +130,6 @@ namespace Alarmy.Common
             return false;
         }
 
-        public bool Equals(IAlarm alarm, bool compareOnlyMetadata)
-        {
-            if (alarm == null)
-                throw new ArgumentNullException("alarm");
-
-            if (compareOnlyMetadata)
-                return DateTime.Equals(this.Time, alarm.Time)
-                        && string.Equals(this.Title, alarm.Title)
-                        && bool.Equals(this.IsHushed, alarm.IsHushed);
-            else
-                return this.Equals(alarm);
-        }
-
         public void Import(IAlarm alarm)
         {
             if (alarm == null)

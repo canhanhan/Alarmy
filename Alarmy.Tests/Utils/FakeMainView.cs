@@ -9,6 +9,7 @@ namespace Alarmy.Tests.Utils
     internal abstract class FakeMainView : IMainView
     {
         public event EventHandler OnNewRequest;
+        public event EventHandler OnImportRequest;
         public event EventHandler<AlarmEventArgs> OnCancelRequest;
         public event EventHandler<AlarmEventArgs> OnChangeRequest;
         public event EventHandler<AlarmEventArgs> OnCompleteRequest;
@@ -63,8 +64,10 @@ namespace Alarmy.Tests.Utils
 
         public abstract void Hide();
 
-        public abstract string AskCancelReason(IAlarm alarm); 
-        
+        public abstract string AskCancelReason(IAlarm alarm);
+
+        public abstract ImportContext AskImport();
+
         public abstract AlarmMetadata AskAlarmMetadata(IAlarm alarm = null);
 
         public abstract void PlayAlarm();

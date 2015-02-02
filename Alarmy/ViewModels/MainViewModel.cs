@@ -13,6 +13,7 @@ namespace Alarmy.ViewModels
         private readonly IAlarmManager alarmManager;        
         private readonly IAlarmService alarmService;
         private readonly IAlarmFactory alarmFactory;
+        private readonly IImporter importer;
         private readonly IMainView view;
         private readonly Settings settings;
 
@@ -63,8 +64,27 @@ namespace Alarmy.ViewModels
             }
         }
 
-        public MainViewModel(IMainView view, IAlarmService alarmService, IAlarmManager alarmManager, IAlarmFactory alarmFactory, Settings settings)        
+        public MainViewModel(IMainView view, IAlarmService alarmService, IAlarmManager alarmManager, 
+                             IAlarmFactory alarmFactory, IImporter importer, Settings settings)        
         {
+            if (view == null)
+                throw new ArgumentNullException("view");
+
+            if (alarmService == null)
+                throw new ArgumentNullException("alarmService");
+
+            if (alarmManager == null)
+                throw new ArgumentNullException("alarmManager");
+
+            if (alarmFactory == null)
+                throw new ArgumentNullException("alarmFactory");
+
+            if (importer == null)
+                throw new ArgumentNullException("importer");
+
+            if (settings == null)
+                throw new ArgumentNullException("settings");
+
             this.alarmFactory = alarmFactory;
             this.settings = settings;
 
@@ -80,6 +100,7 @@ namespace Alarmy.ViewModels
             this.view.OnCancelRequest += view_OnCancelRequest;
             this.view.OnChangeRequest += view_OnChangeRequest;
             this.view.OnNewRequest += view_OnNewRequest;
+            this.view.OnImportRequest += view_OnImportRequest;
             this.view.OnEnableSoundRequest += view_OnEnableSound;
             this.view.OnDisableSoundRequest += view_OnDisableSound;
             this.view.OnPopupOnAlarmOn += view_OnPopupOnAlarmOn;
@@ -98,6 +119,8 @@ namespace Alarmy.ViewModels
             this.alarmManager.OnWakeup += alarmManager_OnWakeup;
             this.alarmManager.OnSoundOn += alarmManager_OnSoundOn;
             this.alarmManager.OnSoundOff += alarmManager_OnSoundOff;
+
+            this.importer = importer;
 
             this.PopupOnAlarmEnabled = this.settings.PopupOnAlarm;
             this.SoundEnabled = this.settings.EnableSound;
@@ -196,6 +219,18 @@ namespace Alarmy.ViewModels
 
             Logger.Info(alarm.ToString() + " is created");
             this.alarmService.Add(alarm);
+        }
+
+        private void view_OnImportRequest(object sender, EventArgs e)
+        {
+            var context = this.view.AskImport();
+            if (context == null)
+            {
+                return;
+            }
+
+            Logger.Info("Starting import");
+            this.importer.Import(context);            
         }
 
         private void view_OnChangeRequest(object sender, AlarmEventArgs e)

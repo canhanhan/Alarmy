@@ -18,11 +18,13 @@ namespace Alarmy.Tests.Utils
 
         public event EventHandler<AlarmEventArgs> OnAlarmUpdate;
 
-        public double Interval { get; set; }
+        public double RepositoryRefreshInterval { get; set; }
 
         public abstract void Start();
 
         public abstract void Stop();
+
+        public IDictionary<Guid, IAlarm> Cache { get; set; }
 
         public void Add(IAlarm alarm)
         {

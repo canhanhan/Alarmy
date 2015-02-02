@@ -22,7 +22,8 @@ namespace Alarmy.Core.FileAlarmRepository
             if (alarm == null)
                 throw new ArgumentNullException("alarm");
 
-            return !((alarm.Status == AlarmStatus.Canceled || alarm.Status == AlarmStatus.Completed) && alarm.Time < GetTime().AddMinutes(-this.freshnessInMinutes));
+            var isFinished = alarm.Status == AlarmStatus.Canceled || alarm.Status == AlarmStatus.Completed;
+            return !isFinished || alarm.Time >= GetTime().AddMinutes(-this.freshnessInMinutes);
         }
 
         private DateTime GetTime()

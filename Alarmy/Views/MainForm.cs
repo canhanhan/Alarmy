@@ -34,6 +34,7 @@ namespace Alarmy.Views
         public event EventHandler<AlarmEventArgs> OnCancelRequest;
         public event EventHandler<AlarmEventArgs> OnChangeRequest;
         public event EventHandler OnNewRequest;
+        public event EventHandler OnImportRequest;
         public event EventHandler OnEnableSoundRequest;
         public event EventHandler OnDisableSoundRequest;
         public event EventHandler OnPopupOnAlarmOn;
@@ -120,6 +121,24 @@ namespace Alarmy.Views
                 if (cancelForm.ShowDialog() == DialogResult.OK)
                 {
                     return cancelForm.CancelReason.Text;
+                }
+
+                return null;
+            }
+        }
+
+        public ImportContext AskImport()
+        {
+            using (var importForm = new ImportForm())
+            {
+                if (importForm.ShowDialog() == DialogResult.OK)
+                {
+                    return new ImportContext
+                    {
+                        DateFormat = importForm.DateFormat,
+                        Path = importForm.Path,
+                        DeleteExisting = importForm.DeleteExistingAlarms
+                    };
                 }
 
                 return null;
@@ -216,6 +235,7 @@ namespace Alarmy.Views
 
         private void RefreshAlarmGroups()
         {
+            this.SuspendLayout();
             this.listView1.BeginUpdate();
 
             var grouppedItems = this.listView1.Items.Cast<ListViewItem>()
@@ -235,7 +255,7 @@ namespace Alarmy.Views
                 title += " - " + group.Key.ToShortTimeString();
 
                 ListViewGroup listViewGroup;
-                if (listView1.Groups.Count >= key)
+                if (listView1.Groups.Count <= key)
                 {
                     listViewGroup = new ListViewGroup(title);
                     this.listView1.Groups.Add(listViewGroup);
@@ -244,13 +264,33 @@ namespace Alarmy.Views
                 {
                     listViewGroup = this.listView1.Groups[key];
                     listViewGroup.Header = title;
+                    listViewGroup.Items.Clear();
                 }
+
                 listViewGroup.Items.Cast<ListViewItem>().ToList().ForEach(x => x.Group = null);
                 group.ToList().ForEach(item => item.Group = listViewGroup);
             }
 
+            while (grouppedItems.Length < this.listView1.Groups.Count)
+            {
+                var group = this.listView1.Groups[this.listView1.Groups.Count - 1];
+                group.Items.Clear();
+                this.listView1.Groups.Remove(group);
+            }
+
             this.listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             this.listView1.EndUpdate();
+
+            var newWidth = this.listView1.Columns.Cast<ColumnHeader>().Sum(x => x.Width) +
+                            this.listView1.Padding.Horizontal +
+                            this.listView1.Margin.Horizontal +
+                            this.tableLayoutPanel1.Padding.Horizontal +
+                            this.tableLayoutPanel1.Margin.Horizontal +
+                            this.Padding.Horizontal;
+            if (newWidth != this.Width)
+                this.Reposition(newWidth);
+
+            this.ResumeLayout();
         }
 
         private void InvokeIfNecessary(Action action)
@@ -368,11 +408,6 @@ namespace Alarmy.Views
                 base.UnRegisterBar();
             }
         }
-
-        protected override void OnLocationChanged(EventArgs e)
-        {
-            base.OnLocationChanged(e);
-        }
         #endregion
 
         #region Menu Events
@@ -432,6 +467,11 @@ namespace Alarmy.Views
         private void newAlarmToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.OnNewRequest.Invoke();
+        }
+
+        private void importMenuItem_Click(object sender, EventArgs e)
+        {
+            this.OnImportRequest.Invoke();
         }
 
         private void hideToolStripMenuItem_Click(object sender, EventArgs e)

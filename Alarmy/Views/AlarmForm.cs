@@ -16,14 +16,14 @@ namespace Alarmy.Views
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
-            Close();
+            this.DialogResult = DialogResult.Cancel;
+            this.Close();
         }
 
         private void addTimeAlarm_Click(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.OK;
-            Close();
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
     }
 }

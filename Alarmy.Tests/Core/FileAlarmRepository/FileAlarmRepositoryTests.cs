@@ -1,12 +1,12 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Alarmy.Common;
 using Alarmy.Core.FileAlarmRepository;
+using Alarmy.Tests.Utils;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using Alarmy.Common;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
-using Alarmy.Tests.Utils;
 
 namespace Alarmy.Tests.Core
 {
