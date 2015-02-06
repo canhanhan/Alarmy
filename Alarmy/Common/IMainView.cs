@@ -26,7 +26,8 @@ namespace Alarmy.Common
         bool Visible { get; }
         bool SoundEnabled { get; set; }
         bool PopupOnAlarm { get; set; }
-        bool SmartAlarm { get; set; }  
+        bool SmartAlarm { get; set; }
+        bool IsMute { get; set; }
 
         string AskCancelReason(IAlarm alarm);
         AlarmMetadata AskAlarmMetadata(IAlarm alarm = null);

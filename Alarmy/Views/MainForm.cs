@@ -21,7 +21,7 @@ namespace Alarmy.Views
         private readonly System.Windows.Forms.Timer visibilityTimer;
 
         private bool shouldBeVisible;
-        private bool soundEnabled;
+        private bool isMute;
 
         public new event EventHandler OnLoad;
         public new event EventHandler OnClosing;
@@ -57,16 +57,16 @@ namespace Alarmy.Views
             this.components.Add(this.soundPlayer);
         }
 
-        public bool SoundEnabled
+        public bool IsMute
         {
             get
             {
-                return this.soundEnabled;
+                return this.isMute;
             }
             set
             {
-                this.soundEnabled = value;
-                if (this.soundEnabled)
+                this.isMute = value;
+                if (this.isMute)
                 {
                     this.label1.Text = "Alarmy";
                 }
@@ -74,6 +74,18 @@ namespace Alarmy.Views
                 {
                     this.label1.Text = "Alarmy (Muted)";
                 }
+            }
+        }
+
+        public bool SoundEnabled
+        {
+            get
+            {
+                return this.soundToolStripMenuItem.Checked;
+            }
+            set
+            {
+                this.soundToolStripMenuItem.Checked = value;
             }
         }
 
@@ -489,6 +501,7 @@ namespace Alarmy.Views
         private void soundToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             var newValue = !this.soundToolStripMenuItem.Checked;
+
             if (!newValue
                     && !this.popupOnAlarmMenuItem.Checked 
                     && MessageBox.Show("\"Popup on Alarm\" feature is turned off. If you mute the sound, you will not be notified for ringing alarms. Are you sure?", "Notification Warning!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == System.Windows.Forms.DialogResult.No)
@@ -539,6 +552,12 @@ namespace Alarmy.Views
             {
                 this.OnSmartAlarmOff.Invoke();
             }          
+        }
+
+
+        private void notifyIcon1_Click(object sender, EventArgs e)
+        {
+            this.hideToolStripMenuItem_Click(sender, e);
         }
         #endregion
 

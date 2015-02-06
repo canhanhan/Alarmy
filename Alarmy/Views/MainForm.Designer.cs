@@ -32,6 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.listViewContext = new System.Windows.Forms.ContextMenu();
             this.newAlarmToolStripMenuItem = new System.Windows.Forms.MenuItem();
+            this.importMenuItem = new System.Windows.Forms.MenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.MenuItem();
             this.soundToolStripMenuItem = new System.Windows.Forms.MenuItem();
             this.popupOnAlarmMenuItem = new System.Windows.Forms.MenuItem();
@@ -51,7 +52,6 @@
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
-            this.importMenuItem = new System.Windows.Forms.MenuItem();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -73,6 +73,12 @@
             this.newAlarmToolStripMenuItem.Index = 0;
             this.newAlarmToolStripMenuItem.Text = "&New Alarm";
             this.newAlarmToolStripMenuItem.Click += new System.EventHandler(this.newAlarmToolStripMenuItem_Click);
+            // 
+            // importMenuItem
+            // 
+            this.importMenuItem.Index = 1;
+            this.importMenuItem.Text = "&Import...";
+            this.importMenuItem.Click += new System.EventHandler(this.importMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
@@ -218,12 +224,7 @@
             this.notifyIcon1.ContextMenu = this.listViewContext;
             this.notifyIcon1.Text = "notifyIcon1";
             this.notifyIcon1.Visible = true;
-            // 
-            // importMenuItem
-            // 
-            this.importMenuItem.Index = 1;
-            this.importMenuItem.Text = "&Import...";
-            this.importMenuItem.Click += new System.EventHandler(this.importMenuItem_Click);
+            this.notifyIcon1.Click += new System.EventHandler(this.notifyIcon1_Click);
             // 
             // MainForm
             // 

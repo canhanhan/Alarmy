@@ -37,7 +37,7 @@ namespace Alarmy.ViewModels
             set
             {
                 this.soundEnabled = value;
-                this.view.SoundEnabled = value;
+                this.view.IsMute = value;
             }
         }        
         private bool PopupOnAlarmEnabled
