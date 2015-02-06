@@ -10,11 +10,10 @@ namespace Alarmy.Core
 {
     internal class OperaWakeupReportMap : CsvClassMap<Alarm>
     {
-        public OperaWakeupReportMap()
-        {          
-  
+        public OperaWakeupReportMap(string format)
+        {            
             Map(x => x.Title).ConvertUsing(row => string.Format("{1} (#{0})", row.GetField(0), row.GetField(1)));
-            Map(x => x.Time).ConvertUsing(row => DateTime.ParseExact(row.GetField(2), @"dd\.MM\.yy", CultureInfo.InvariantCulture).Add(TimeSpan.ParseExact(row.GetField(3), @"hh\:mm", CultureInfo.InvariantCulture)));
+            Map(x => x.Time).ConvertUsing(row => DateTime.ParseExact(string.Format("{0} {1}", row.GetField(2), row.GetField(3)), format, CultureInfo.InvariantCulture));
         }
     }
 
@@ -45,7 +44,8 @@ namespace Alarmy.Core
                 using (var textReader = new StreamReader(File.OpenRead(context.Path)))
                 using (var csvReader = new CsvReader(textReader))
                 {
-                    csvReader.Configuration.RegisterClassMap<OperaWakeupReportMap>();
+                    var map = new OperaWakeupReportMap(context.DateFormat);
+                    csvReader.Configuration.RegisterClassMap(map);
                     csvReader.Configuration.Delimiter = "\t";
                     csvReader.Configuration.HasHeaderRecord = false;
 

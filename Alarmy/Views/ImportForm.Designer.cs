@@ -37,8 +37,8 @@
             this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
             this.importButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.deleteExistingCheckBox = new System.Windows.Forms.CheckBox();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.tableLayoutPanel1.SuspendLayout();
             this.flowLayoutPanel2.SuspendLayout();
             this.SuspendLayout();
@@ -114,7 +114,7 @@
             this.dateFormatTextBox.Name = "dateFormatTextBox";
             this.dateFormatTextBox.Size = new System.Drawing.Size(244, 20);
             this.dateFormatTextBox.TabIndex = 2;
-            this.dateFormatTextBox.Text = "MM.dd.yyyy";
+            this.dateFormatTextBox.Text = "dd\\.MM\\.yy hh\\:mm";
             // 
             // flowLayoutPanel2
             // 
@@ -149,10 +149,6 @@
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.Filter = "Text File|*.txt|All files|*.*";
-            // 
             // deleteExistingCheckBox
             // 
             this.deleteExistingCheckBox.AutoSize = true;
@@ -163,6 +159,10 @@
             this.deleteExistingCheckBox.TabIndex = 3;
             this.deleteExistingCheckBox.Text = "Delete Existing Alarms";
             this.deleteExistingCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.Filter = "Text File|*.txt|All files|*.*";
             // 
             // ImportForm
             // 

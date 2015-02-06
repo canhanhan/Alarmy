@@ -29,6 +29,7 @@ namespace Alarmy.Tests.Utils
         public event EventHandler OnClosing;
 
         public bool Visible { get; set; }
+        public bool IsMute { get; set; }
         public bool SoundEnabled { get; set; }
         public bool PopupOnAlarm { get; set; }
         public bool SmartAlarm { get; set; }
