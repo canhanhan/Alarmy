@@ -10,14 +10,13 @@ namespace Alarmy.Core
         private readonly ITimer timer;
         private readonly IAlarmRepository repository;
         private readonly bool isStoppableRepository;
+        private readonly IDictionary<Guid, IAlarm> cache;
 
         public event EventHandler<AlarmEventArgs> OnAlarmAdd;
         public event EventHandler<AlarmEventArgs> OnAlarmRemoval;
         public event EventHandler<AlarmEventArgs> OnAlarmUpdate;
         public event EventHandler<AlarmEventArgs> OnAlarmStatusChange;
-
-        public IDictionary<Guid, IAlarm> Cache { get; private set; }
-
+      
         public AlarmService(IAlarmRepository repository, ITimer timer, int checkInterval)
         {
             if (repository == null)
@@ -28,7 +27,7 @@ namespace Alarmy.Core
 
             this.repository = repository;
             this.isStoppableRepository = typeof(ISupportsStartStop).IsAssignableFrom(repository.GetType());
-            this.Cache = new Dictionary<Guid, IAlarm>();
+            this.cache = new Dictionary<Guid, IAlarm>();
             this.timer = timer;
             this.timer.Elapsed += timer_Elapsed;
             this.timer.Interval = TimeSpan.FromSeconds(checkInterval).TotalMilliseconds;
@@ -56,9 +55,9 @@ namespace Alarmy.Core
             if (alarm == null)
                 throw new ArgumentNullException("alarm");
 
-            lock (this.Cache)
+            lock (this.cache)
             {
-                this.Cache.Add(alarm.Id, alarm);
+                this.cache.Add(alarm.Id, alarm);
                 this.repository.Add(alarm);
 
                 if (this.OnAlarmAdd != null)
@@ -73,9 +72,9 @@ namespace Alarmy.Core
             if (alarm == null)
                 throw new ArgumentNullException("alarm");
 
-            lock (this.Cache)
+            lock (this.cache)
             {
-                this.Cache.Remove(alarm.Id);
+                this.cache.Remove(alarm.Id);
                 this.repository.Remove(alarm);
 
                 if (this.OnAlarmRemoval != null)
@@ -88,9 +87,9 @@ namespace Alarmy.Core
             if (alarm == null)
                 throw new ArgumentNullException("alarm");
 
-            lock (this.Cache)
+            lock (this.cache)
             {
-                this.Cache[alarm.Id] = alarm;
+                this.cache[alarm.Id] = alarm;
                 this.repository.Update(alarm);
 
                 if (this.OnAlarmUpdate != null)
@@ -102,9 +101,27 @@ namespace Alarmy.Core
 
         public IEnumerable<IAlarm> List()
         {
-            return this.Cache.Values;
+            return this.cache.Values;
         }
      
+        public void Import(IEnumerable<IAlarm> alarms, bool deleteExisting)
+        {
+            lock (this.cache)
+            {
+                if (deleteExisting)
+                {
+                    foreach (var alarm in this.cache.Values.ToArray())
+                    {
+                        this.Remove(alarm);
+                    }
+                }
+
+                foreach(var alarm in alarms)
+                {
+                    this.Add(alarm);
+                }
+            }
+        }
         public void Dispose()
         {
             if (this.timer != null)
@@ -113,7 +130,7 @@ namespace Alarmy.Core
 
         private void timer_Elapsed(object sender, EventArgs e)
         {
-            lock (this.Cache)
+            lock (this.cache)
             {
                 if (this.repository.IsDirty)
                 {
@@ -121,7 +138,7 @@ namespace Alarmy.Core
                 }
                 else
                 {
-                    foreach (var alarm in this.Cache.Values)
+                    foreach (var alarm in this.cache.Values)
                     {
                         this.CheckAlarmStatus(alarm);
                     }
@@ -131,23 +148,23 @@ namespace Alarmy.Core
 
         private void RefreshRepository()
         {
-            lock (this.Cache)
+            lock (this.cache)
             {
                 var alarms = this.repository.List().ToDictionary(x => x.Id);
 
-                var deletedAlarmKeys = this.Cache.Keys.Where(x => !alarms.ContainsKey(x)).ToArray();
+                var deletedAlarmKeys = this.cache.Keys.Where(x => !alarms.ContainsKey(x)).ToArray();
                 foreach (var key in deletedAlarmKeys)
                 {
                     if (this.OnAlarmRemoval != null)
-                        this.OnAlarmRemoval.Invoke(this, new AlarmEventArgs(this.Cache[key]));
+                        this.OnAlarmRemoval.Invoke(this, new AlarmEventArgs(this.cache[key]));
 
-                    this.Cache.Remove(key);
+                    this.cache.Remove(key);
                 }
 
                 foreach (var alarm in alarms.Values)
                 {
                     IAlarm cachedAlarm = null;
-                    if (this.Cache.TryGetValue(alarm.Id, out cachedAlarm))
+                    if (this.cache.TryGetValue(alarm.Id, out cachedAlarm))
                     {
                         cachedAlarm.Import(alarm);
 
@@ -157,7 +174,7 @@ namespace Alarmy.Core
                     else
                     {
                         cachedAlarm = alarm;
-                        this.Cache.Add(alarm.Id, cachedAlarm);
+                        this.cache.Add(alarm.Id, cachedAlarm);
                         if (this.OnAlarmAdd != null)
                             this.OnAlarmAdd.Invoke(this, new AlarmEventArgs(cachedAlarm));
                     }

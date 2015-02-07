@@ -31,29 +31,15 @@ namespace Alarmy.Core
 
         public void Import(ImportContext context)        
         {
-            lock (this.alarmService.Cache)
+            using (var textReader = new StreamReader(File.OpenRead(context.Path)))
+            using (var csvReader = new CsvReader(textReader))
             {
-                if (context.DeleteExisting)
-                {
-                    foreach (var alarm in this.alarmService.List().ToArray())
-                    {
-                        this.alarmService.Remove(alarm);
-                    }
-                }
+                var map = new OperaWakeupReportMap(context.DateFormat);
+                csvReader.Configuration.RegisterClassMap(map);
+                csvReader.Configuration.Delimiter = "\t";
+                csvReader.Configuration.HasHeaderRecord = false;
 
-                using (var textReader = new StreamReader(File.OpenRead(context.Path)))
-                using (var csvReader = new CsvReader(textReader))
-                {
-                    var map = new OperaWakeupReportMap(context.DateFormat);
-                    csvReader.Configuration.RegisterClassMap(map);
-                    csvReader.Configuration.Delimiter = "\t";
-                    csvReader.Configuration.HasHeaderRecord = false;
-
-                    foreach (var alarm in csvReader.GetRecords<Alarm>())
-                    {
-                        this.alarmService.Add(alarm);
-                    }
-                }
+                this.alarmService.Import(csvReader.GetRecords<Alarm>(), context.DeleteExisting);
             }
         }
     }

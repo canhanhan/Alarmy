@@ -10,11 +10,11 @@ namespace Alarmy.Common
         event EventHandler<AlarmEventArgs> OnAlarmRemoval;
         event EventHandler<AlarmEventArgs> OnAlarmUpdate;
 
-        IDictionary<Guid, IAlarm> Cache { get; }
-
         void Add(IAlarm alarm);
         void Remove(IAlarm alarm);
         void Update(IAlarm item);
+        void Import(IEnumerable<IAlarm> alarms, bool deleteExisting);
+
         IEnumerable<IAlarm> List();
     }
 }

@@ -24,7 +24,7 @@ namespace Alarmy.Tests.Utils
 
         public abstract void Stop();
 
-        public IDictionary<Guid, IAlarm> Cache { get; set; }
+        public abstract void Import(IEnumerable<IAlarm> alarms, bool deleteExisting);
 
         public void Add(IAlarm alarm)
         {
