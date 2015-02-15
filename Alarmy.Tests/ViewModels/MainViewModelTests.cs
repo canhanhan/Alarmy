@@ -13,6 +13,7 @@ namespace Alarmy.Tests.ViewModels
         private FakeMainView view;
         private FakeAlarmService alarmService;
         private IAlarmManager alarmManager;
+        private IAlarmReminderManager alarmReminderManager;
         private IAlarmFactory alarmFactory;
         private IImporter importer;
         private Settings settings;
@@ -24,17 +25,29 @@ namespace Alarmy.Tests.ViewModels
             this.view = Substitute.For<FakeMainView>();
             this.alarmService = Substitute.For<FakeAlarmService>();
             this.alarmManager = Substitute.For<IAlarmManager>();
+            this.alarmReminderManager = Substitute.For<IAlarmReminderManager>();
             this.alarmFactory = Substitute.For<IAlarmFactory>();
             this.importer = Substitute.For<IImporter>();
             this.settings = new Settings();
-            this.viewModel = new MainViewModel(this.view, this.alarmService, this.alarmManager, this.alarmFactory, this.importer, this.settings);
+            this.viewModel = new MainViewModel(this.view, this.alarmService, this.alarmManager, this.alarmReminderManager, this.alarmFactory, this.importer, this.settings);
+        }
+
+        [TestMethod]
+        public void MainViewModel_AlarmReminderManagerRequestNotification_TriggersView_WhenCalled()
+        {
+            var alarm = FakeAlarm.GetAlarm(AlarmStatus.Missed);
+
+            this.alarmReminderManager.OnRequestNotification += Raise.EventWith(new AlarmReminderEventArgs(string.Empty, string.Empty));
+
+            this.view.ReceivedWithAnyArgs().ShowReminder(null, null);
         }
 
         [TestMethod]
         public void MainViewModel_AlarmStatusChange_PlaysAlarm_WhenSoundEnabled()
         {
             this.view.SetSound(true);
-            var alarm = new FakeAlarm { IsRinging = true };
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
             
             this.alarmService.TriggerAlarmStatusChange(alarm);
 
@@ -45,7 +58,8 @@ namespace Alarmy.Tests.ViewModels
         public void MainViewModel_AlarmStatusChange_DoesNotPlayAlarm_WhenSoundDisabled()
         {
             this.view.SetSound(false);
-            var alarm = new FakeAlarm { IsRinging = true };
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
                         
             this.alarmService.TriggerAlarmStatusChange(alarm);
 
@@ -56,7 +70,8 @@ namespace Alarmy.Tests.ViewModels
         public void MainViewModel_SoundChange_PlaysAlarm_WhenSoundEnabled()
         {
             this.view.SetSound(false);
-            var alarm = new FakeAlarm { IsRinging = true };            
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;        
             this.alarmService.AddStorage(alarm);
 
             this.view.SetSound(true);
@@ -68,7 +83,8 @@ namespace Alarmy.Tests.ViewModels
         public void MainViewModel_SoundChange_StopsAlarm_WhenSoundDisabled()
         {
             this.view.SetSound(true);
-            var alarm = new FakeAlarm { IsRinging = true };            
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
             this.alarmService.Add(alarm);
 
             this.view.SetSound(false);
@@ -80,12 +96,32 @@ namespace Alarmy.Tests.ViewModels
         public void MainViewModel_SoundChange_DoesNotPlayAlarm_WhenNoRingingAlarms()
         {
             this.view.SetSound(false);
-            var alarm = new FakeAlarm { IsRinging = false };            
+            var alarm = FakeAlarm.GetAlarm();
             this.alarmService.AddStorage(alarm);
 
             this.view.SetSound(true);
 
             this.view.DidNotReceive().PlayAlarm();
+        }
+
+        [TestMethod]
+        public void MainViewModel_AlarmManagerSleep_StopsReminderManager_WhenSmartAlarmOn()
+        {
+            this.view.SetSmartAlarm(true);
+
+            this.alarmManager.OnSleep += Raise.Event();
+
+            this.alarmReminderManager.Received().Stop();
+        }
+
+        [TestMethod]
+        public void MainViewModel_AlarmManagerSleep_DoesNotStopReminderManager_WhenSmartAlarmOff()
+        {
+            this.view.SetSmartAlarm(false);
+
+            this.alarmManager.OnSleep += Raise.Event();
+
+            this.alarmReminderManager.DidNotReceive().Stop();
         }
 
         [TestMethod]
@@ -123,7 +159,8 @@ namespace Alarmy.Tests.ViewModels
         {
             this.view.SetSmartAlarm(true);
             this.view.SetSound(true);
-            var alarm = new FakeAlarm { IsRinging = true };
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
             this.alarmService.AddStorage(alarm);
             
             this.alarmManager.OnWakeup += Raise.Event();
@@ -132,53 +169,42 @@ namespace Alarmy.Tests.ViewModels
         }
 
         [TestMethod]
-        public void MainViewModel_AlarmManagerSoundOn_RingsAlarm_WhenMuteOff()
-        {
-            this.view.SetSmartAlarm(true);
-            this.view.SetSound(true);
-            var alarm = new FakeAlarm { IsRinging = true };
-            this.alarmService.AddStorage(alarm);
-
-            this.alarmManager.OnSoundOn += Raise.Event();
-
-            this.view.Received().PlayAlarm();
-        }
-
-        [TestMethod]
-        public void MainViewModel_AlarmManagerSoundOn_DoesNotRingAlarm_WhenMuteOn()
+        public void MainViewModel_AlarmManagerWakeup_DoesNotRingAlarm_WhenMuteOn()
         {
             this.view.SetSmartAlarm(true);
             this.view.SetSound(false);
-            var alarm = new FakeAlarm { IsRinging = true };
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
             this.alarmService.AddStorage(alarm);
 
-            this.alarmManager.OnSoundOn += Raise.Event();
+            this.alarmManager.OnWakeup += Raise.Event();
 
             this.view.DidNotReceive().PlayAlarm();
         }
 
         [TestMethod]
-        public void MainViewModel_AlarmManagerSoundOn_DoesNotRingAlarm_WhenNoRingingAlarms()
+        public void MainViewModel_AlarmManagerWakeup_DoesNotRingAlarm_WhenNoRingingAlarms()
         {
             this.view.SetSmartAlarm(true);
             this.view.SetSound(true);
-            var alarm = new FakeAlarm { IsRinging = false };
+            var alarm = FakeAlarm.GetAlarm();
             this.alarmService.AddStorage(alarm);
 
-            this.alarmManager.OnSoundOn += Raise.Event();
+            this.alarmManager.OnWakeup += Raise.Event();
 
             this.view.DidNotReceive().PlayAlarm();
         }
 
         [TestMethod]
-        public void MainViewModel_AlarmManagerSoundOff_StopsAlarm_WhenAnyRingingAlarms()
+        public void MainViewModel_AlarmManagerSleep_StopsAlarm_WhenAnyRingingAlarms()
         {
             this.view.SetSmartAlarm(true);
             this.view.SetSound(true);
-            var alarm = new FakeAlarm { IsRinging = true };
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
             this.alarmService.Add(alarm);
 
-            this.alarmManager.OnSoundOff += Raise.Event();
+            this.alarmManager.OnSleep += Raise.Event();
 
             this.view.Received().StopAlarm();
         }
@@ -186,7 +212,7 @@ namespace Alarmy.Tests.ViewModels
         [TestMethod]
         public void MainViewModel_AlarmServiceAdd_AddsAlarmToView()
         {
-            var alarm = new FakeAlarm();
+            var alarm = FakeAlarm.GetAlarm();
 
             this.alarmService.Add(alarm);
 
@@ -196,7 +222,8 @@ namespace Alarmy.Tests.ViewModels
         [TestMethod]
         public void MainViewModel_AlarmServiceAdd_StartsAlarm_WhenRingingAlarmAdded()
         {
-            var alarm = new FakeAlarm { IsRinging = true };
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
 
             this.alarmService.Add(alarm);
 
@@ -206,7 +233,7 @@ namespace Alarmy.Tests.ViewModels
         [TestMethod]
         public void MainViewModel_AlarmServiceRemove_RemovesAlarmFromView()
         {
-            var alarm = new FakeAlarm();
+            var alarm = FakeAlarm.GetAlarm();
 
             this.alarmService.Remove(alarm);
 
@@ -216,7 +243,8 @@ namespace Alarmy.Tests.ViewModels
         [TestMethod]
         public void MainViewModel_AlarmServiceRemove_StopsAlarm_WhenRingingAlarmRemoved()
         {
-            var alarm = new FakeAlarm { IsRinging = true };
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
             this.alarmService.Add(alarm);
 
             this.alarmService.Remove(alarm);
@@ -240,9 +268,10 @@ namespace Alarmy.Tests.ViewModels
         {
             this.view.SetSmartAlarm(true);
             this.view.SetSound(true);
-            var alarm = new FakeAlarm { IsRinging = true };
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
             this.alarmService.AddStorage(alarm);
-            this.alarmManager.OnSoundOff += Raise.Event();
+            this.alarmManager.OnSleep += Raise.Event();
 
             this.view.SetSmartAlarm(false);
 
@@ -254,7 +283,8 @@ namespace Alarmy.Tests.ViewModels
         {
             this.view.SetPopupOnAlarm(true);
             this.view.Visible = false;
-            var alarm = new FakeAlarm { IsRinging = true };
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
             
             this.alarmService.TriggerAlarmStatusChange(alarm);
 
@@ -266,7 +296,7 @@ namespace Alarmy.Tests.ViewModels
         {
             this.view.SetPopupOnAlarm(true);
             this.view.Visible = false;
-            var alarm = new FakeAlarm { Status = AlarmStatus.Missed };
+            var alarm = FakeAlarm.GetAlarm(AlarmStatus.Missed);
 
             this.alarmService.TriggerAlarmStatusChange(alarm);
 
@@ -278,7 +308,8 @@ namespace Alarmy.Tests.ViewModels
         {
             this.view.SetPopupOnAlarm(true);
             this.view.Visible = true;
-            var alarm = new FakeAlarm { IsRinging = true };
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
 
             this.alarmService.TriggerAlarmStatusChange(alarm);
 
@@ -291,7 +322,8 @@ namespace Alarmy.Tests.ViewModels
             this.view.SetSmartAlarm(true);
             this.view.SetPopupOnAlarm(true);
             this.view.Visible = false;
-            var alarm = new FakeAlarm { IsRinging = true };
+            var alarm = FakeAlarm.GetAlarm();
+            alarm.IsRinging = true;
             this.alarmService.AddStorage(alarm);
 
             this.alarmManager.OnWakeup += Raise.Event();

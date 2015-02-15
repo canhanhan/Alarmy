@@ -141,7 +141,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\AlarmEqualityComparer.cs" />
     <Compile Include="Common\AlarmEventArgs.cs" />
+    <Compile Include="Common\AlarmReminderEventArgs.cs" />
     <Compile Include="Common\IImporter.cs" />
     <Compile Include="Common\ImportContext.cs" />
     <Compile Include="Common\ISupportsStartStop.cs" />
@@ -152,6 +154,10 @@
     <Compile Include="Common\IAlarmManager.cs" />
     <Compile Include="Common\ISessionStateProvider.cs" />
     <Compile Include="CommandLineArgsSettings.cs" />
+    <Compile Include="Common\IAlarmReminderManager.cs" />
+    <Compile Include="Core\AlarmReminderManager.cs" />
+    <Compile Include="Core\IrresponsibleAlarmReminderManager.cs" />
+    <Compile Include="Core\MissedAlarmReminderManager.cs" />
     <Compile Include="Core\CSVImporter.cs" />
     <Compile Include="Core\FileAlarmRepository\IFileWatcher.cs" />
     <Compile Include="Core\FileAlarmRepository\IRepositorySerializer.cs" />

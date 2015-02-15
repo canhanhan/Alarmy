@@ -11,7 +11,7 @@ namespace Alarmy.Core.FileAlarmRepository
 
         public event EventHandler FileChanged;
 
-        public ReliableFileSystemWatcher(ITimer timer, string path)
+        public ReliableFileSystemWatcher(ITimer fileSystemWatcherTimer, string path)
         {
             var parentPath = Path.GetDirectoryName(path);
             var file = Path.GetFileName(path);
@@ -20,8 +20,7 @@ namespace Alarmy.Core.FileAlarmRepository
             this.fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
             this.fileSystemWatcher.Changed += fileSystemWatcher_Changed;
 
-            this.timer = timer;
-            this.timer.Interval = TimeSpan.FromMinutes(5).TotalMilliseconds;
+            this.timer = fileSystemWatcherTimer;
             this.timer.Elapsed += timer_Elapsed;
         }
 

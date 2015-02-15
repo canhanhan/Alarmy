@@ -17,10 +17,17 @@ namespace Alarmy.Infrastructure
 {
     internal static class WindsorHelper
     {
-        public static ComponentRegistration<TService> Settings<TService>(this ComponentRegistration<TService> config, params Expression<Func<Settings, object>>[] usedSettings)
+        public static ComponentRegistration<TService> DependsOnComponent<TService>(this ComponentRegistration<TService> config, string name)
              where TService : class
         {
-            return config.DynamicParameters((k, d) =>
+            return config.DependsOn(Dependency.OnComponent(name, name));
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase")]
+        public static ComponentRegistration<TService> Settings<TService>(this ComponentRegistration<TService> config, params Expression<Func<Settings, object>>[] usedSettings)
+             where TService : class
+        {            
+            return config.DependsOn((k, d) =>
             {
                 var settings = k.Resolve<Settings>();
                 var serviceType = config.Implementation ?? typeof(TService);
@@ -45,6 +52,8 @@ namespace Alarmy.Infrastructure
                 }
             });
         }
+
+
     }
 
     public class WindsorInstaller : IWindsorInstaller
@@ -69,16 +78,31 @@ namespace Alarmy.Infrastructure
             container.Register(Component
                 .For<IAlarmService>()
                 .ImplementedBy<AlarmService>()
-                .LifestyleSingleton()
+                .DependsOnComponent("checkTimer")
                 .Settings(x => x.CheckInterval)
+                .LifestyleSingleton()
             );
 
-            container.Register(Component
-                .For<ITimer>()
+            container.Register(
+                Component.For<ITimer>()
+                .Named("reminderTimer")
+                .Settings(x => x.ReminderInterval)
                 .ImplementedBy<Timer>()
-                .LifestyleTransient()
-            );
+                .LifestyleTransient(),
 
+                Component.For<ITimer>()
+                .Named("checkTimer")
+                .Settings(x => x.CheckInterval)
+                .ImplementedBy<Timer>()
+                .LifestyleTransient(),
+
+                Component.For<ITimer>()
+                .Named("fileSystemWatcherTimer")
+                .Settings(x => x.RepositoryInterval)
+                .ImplementedBy<Timer>()
+                .LifestyleTransient()                
+            );
+            
             container.Register(Component
                 .For<IAlarmManager>()
                 .ImplementedBy<SessionStateBasedAlarmManager>()
@@ -116,7 +140,8 @@ namespace Alarmy.Infrastructure
                 .For<IFileWatcher>()
                 .ImplementedBy<ReliableFileSystemWatcher>()
                 .LifestyleSingleton()
-                .Settings(x => x.AlarmDatabasePath)
+                .DependsOnComponent("fileSystemWatcherTimer")
+                .Settings(x => x.AlarmDatabasePath, x => x.RepositoryInterval)                
             );
 
             container.Register(Component
@@ -146,6 +171,28 @@ namespace Alarmy.Infrastructure
             container.Register(Component
                 .For<IImporter>()
                 .ImplementedBy<CSVImporter>()
+                .LifestyleSingleton()
+            );
+            
+            container.Register(Classes
+                .FromThisAssembly()
+                .IncludeNonPublicTypes()
+                .BasedOn<IAlarmReminderManager>()
+                .WithServiceSelf()
+                .Configure(x => x
+                    .LifestyleSingleton()
+                    .DependsOnComponent("reminderTimer")
+                    .Settings(y => y.ReminderInterval)
+                )
+            );
+
+            container.Register(Component
+                .For<IAlarmReminderManager>()
+                .UsingFactoryMethod(x =>
+                {
+                    var settings = x.Resolve<Settings>();
+                    return settings.RemindAllAlarms ? (IAlarmReminderManager)x.Resolve<IrresponsibleAlarmReminderManager>() : x.Resolve<MissedAlarmReminderManager>();
+                })                
                 .LifestyleSingleton()
             );
 

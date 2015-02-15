@@ -1,6 +1,7 @@
 ﻿using Alarmy.Common;
 using Alarmy.Infrastructure;
 using System;
+using System.Diagnostics;
 
 namespace Alarmy.Core
 {
@@ -8,8 +9,6 @@ namespace Alarmy.Core
     {
         private readonly ISessionStateProvider sessionStateProvider;
 
-        public event EventHandler OnSoundOff;
-        public event EventHandler OnSoundOn;
         public event EventHandler OnSleep;
         public event EventHandler OnWakeup;
 
@@ -19,14 +18,16 @@ namespace Alarmy.Core
                 throw new ArgumentNullException("sessionInformation");
 
             this.sessionStateProvider = sessionInformation;
-            this.sessionStateProvider.SessionLocked += sessionInformation_SessionLocked;
-            this.sessionStateProvider.SessionUnlocked += sessionInformation_SessionUnlocked;
+            this.sessionStateProvider.SessionLocked += sessionInformation_SessionDeactivated;
+            this.sessionStateProvider.SessionUnlocked += sessionInformation_SessionActivated;
             this.sessionStateProvider.SessionActivated += sessionInformation_SessionActivated;
             this.sessionStateProvider.SessionDeactivated += sessionInformation_SessionDeactivated;
         }
 
         private void sessionInformation_SessionDeactivated(object sender, EventArgs e)
         {
+            Trace.WriteLine("sessionInformation_SessionDeactivated");
+
             if (OnSleep != null)
             {
                 OnSleep.Invoke(this, null);
@@ -35,25 +36,11 @@ namespace Alarmy.Core
 
         private void sessionInformation_SessionActivated(object sender, EventArgs e)
         {
+            Trace.WriteLine("sessionInformation_SessionActivated");
+
             if (OnWakeup != null)
             {
                 OnWakeup.Invoke(this, null);
-            }
-        }
-
-        private void sessionInformation_SessionUnlocked(object sender, EventArgs e)
-        {
-            if (OnSoundOn != null)
-            {
-                OnSoundOn.Invoke(this, null);
-            }
-        }
-
-        private void sessionInformation_SessionLocked(object sender, EventArgs e)
-        {
-            if (OnSoundOff != null)
-            {
-                OnSoundOff.Invoke(this, null);
             }
         }
     }

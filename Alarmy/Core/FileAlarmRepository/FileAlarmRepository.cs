@@ -1,22 +1,19 @@
 ﻿using Alarmy.Common;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Alarmy.Core.FileAlarmRepository
 {
     internal class FileAlarmRepository : IAlarmRepository, ISupportsStartStop
     {
-        private readonly string path;        
+        private readonly string path;
         private readonly IRepositoryFilter[] filters;
         private readonly ISharedFileFactory sharedFileFactory;
         private readonly IFileWatcher watcher;
         private readonly IRepositorySerializer serializer;
-
-        private IDictionary<Guid, IAlarm> alarmsCache;
-
-        public bool IsDirty { get; private set; }
+        
+        private bool isChanged;
 
         public FileAlarmRepository(IFileWatcher watcher, ISharedFileFactory sharedFileFactory, IRepositorySerializer serializer, IRepositoryFilter[] filters, string path)
         {
@@ -39,7 +36,7 @@ namespace Alarmy.Core.FileAlarmRepository
             this.path = path;
 
             this.watcher = watcher;
-            this.watcher.FileChanged += watcher_FileChanged;
+            this.watcher.FileChanged += watcher_FileChanged;           
         }
 
         public void Start()
@@ -53,72 +50,37 @@ namespace Alarmy.Core.FileAlarmRepository
             this.watcher.Stop();
         }
 
-        public IEnumerable<IAlarm> List()
+        public IEnumerable<IAlarm> Load()
         {
-            this.IsDirty = false;
-
-            return this.alarmsCache.Values;
-        }
-
-        public void Add(IAlarm alarm)
-        {
-            this.Modify(x => x[alarm.Id] = alarm);
-        }
-
-        public void Remove(IAlarm alarm)
-        {
-            this.Modify(x => x.Remove(alarm.Id));
-        }
-
-        public void Update(IAlarm alarm)
-        {
-            this.Add(alarm);
-        }
-
-        private void GetAlarms(Stream stream, bool filter = true)
-        {
-            this.alarmsCache = this.serializer.Deserialize(stream) ?? new Dictionary<Guid, IAlarm>();
-
-            if (filter)
-                this.FilterAlarms();
-        }
-
-        private void Modify(Action<IDictionary<Guid, IAlarm>> operation)
-        {
-            using (var file = this.sharedFileFactory.Write(path))
-            {
-                this.GetAlarms(file.Stream, filter: false);
-                file.Stream.Position = 0;
-
-                operation.Invoke(this.alarmsCache);
-
-                this.FilterAlarms();
-
-                this.serializer.Serialize(this.alarmsCache, file.Stream);
-            }
-        }
-
-        private void FilterAlarms()
-        {
-            foreach(var keyValuePair in this.alarmsCache.Where(x => !this.PassesAllFilters(x.Value)).ToArray())
-            {
-                this.alarmsCache.Remove(keyValuePair.Key);
-            }
-        }
-
-        private bool PassesAllFilters(IAlarm alarm)
-        {
-            return this.filters.All(x => x.Match(alarm));
-        }
-
-        private void watcher_FileChanged(object sender, EventArgs e)
-        {
-            this.IsDirty = true;
+            if (!this.isChanged)
+                return null;
 
             using (var sharedFile = this.sharedFileFactory.Read(this.path))
             {
-                this.GetAlarms(sharedFile.Stream);
+                this.isChanged = false;
+                return this.Filter(this.serializer.Deserialize(sharedFile.Stream));
+            }            
+        }
+
+        public void Save(IEnumerable<IAlarm> alarms)
+        {
+            using (var file = this.sharedFileFactory.Write(path))
+            {
+                this.serializer.Serialize(alarms.ToArray(), file.Stream);
             }
+        }
+                
+        private void watcher_FileChanged(object sender, EventArgs e)
+        {
+            this.isChanged = true;
+        }
+
+        private IEnumerable<IAlarm> Filter(IEnumerable<IAlarm> alarms)
+        {
+            if (alarms == null)
+                return new IAlarm[0];
+
+            return alarms.Where(alarm => this.filters.All(filter => filter.Match(alarm)));
         }
     }
 }

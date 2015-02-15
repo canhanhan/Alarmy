@@ -32,6 +32,7 @@ namespace Alarmy.Common
         string AskCancelReason(IAlarm alarm);
         AlarmMetadata AskAlarmMetadata(IAlarm alarm = null);
         ImportContext AskImport();
+        void ShowReminder(string caption, string message);
 
         void Show();
         void Hide();
@@ -41,6 +42,6 @@ namespace Alarmy.Common
 
         void AddAlarm(IAlarm alarm);
         void RemoveAlarm(IAlarm alarm);
-        void UpdateAlarm(IAlarm alarm);
+        void UpdateAlarm(IAlarm alarm);        
     }
 }

@@ -13,6 +13,7 @@ namespace Alarmy.ViewModels
         private readonly IAlarmManager alarmManager;        
         private readonly IAlarmService alarmService;
         private readonly IAlarmFactory alarmFactory;
+        private readonly IAlarmReminderManager alarmReminderManager;
         private readonly IImporter importer;
         private readonly IMainView view;
         private readonly Settings settings;
@@ -21,6 +22,7 @@ namespace Alarmy.ViewModels
         private bool smartAlarmEnabled;
         private bool soundEnabled;
         private bool popupOnAlarmEnabled;
+        private bool isSleeping;
 
         private bool SmartAlarmEnabled
         {
@@ -64,7 +66,7 @@ namespace Alarmy.ViewModels
             }
         }
 
-        public MainViewModel(IMainView view, IAlarmService alarmService, IAlarmManager alarmManager, 
+        public MainViewModel(IMainView view, IAlarmService alarmService, IAlarmManager alarmManager, IAlarmReminderManager alarmReminderManager,
                              IAlarmFactory alarmFactory, IImporter importer, Settings settings)        
         {
             if (view == null)
@@ -84,6 +86,9 @@ namespace Alarmy.ViewModels
 
             if (settings == null)
                 throw new ArgumentNullException("settings");
+
+            if (alarmReminderManager == null)
+                throw new ArgumentNullException("alarmReminderManager");
 
             this.alarmFactory = alarmFactory;
             this.settings = settings;
@@ -117,8 +122,9 @@ namespace Alarmy.ViewModels
             this.alarmManager = alarmManager;
             this.alarmManager.OnSleep += alarmManager_OnSleep;
             this.alarmManager.OnWakeup += alarmManager_OnWakeup;
-            this.alarmManager.OnSoundOn += alarmManager_OnSoundOn;
-            this.alarmManager.OnSoundOff += alarmManager_OnSoundOff;
+
+            this.alarmReminderManager = alarmReminderManager;
+            this.alarmReminderManager.OnRequestNotification += alarmReminderManager_OnRequestNotification;
 
             this.importer = importer;
 
@@ -129,13 +135,13 @@ namespace Alarmy.ViewModels
 
         private void CheckForAlarms()
         {
-            if (!this.view.Visible && this.AnyRingingAlarms(includeMissed: true))
+            if (!this.isSleeping && !this.view.Visible && this.AnyRingingAlarms(includeMissed: true))
             {
                 Logger.Info("View is shown...");
                 this.view.Show();
             }
 
-            if (this.SoundEnabled && this.AnyRingingAlarms())
+            if (!this.isSleeping && this.SoundEnabled && this.AnyRingingAlarms())
             {               
                 if (!this.isAlarmRinging)
                 {                    
@@ -159,8 +165,23 @@ namespace Alarmy.ViewModels
 
         private void Wakeup()
         {
+            this.isSleeping = false;
             this.alarmService.Start();
+            this.alarmReminderManager.Start();
             this.CheckForAlarms();
+        }
+
+        private void Sleep()
+        {
+            this.isSleeping = true;
+            this.CheckForAlarms();
+            this.alarmService.Stop();
+            this.alarmReminderManager.Stop();            
+        }
+
+        private void alarmReminderManager_OnRequestNotification(object sender, AlarmReminderEventArgs e)
+        {
+            this.view.ShowReminder(e.Caption, e.Message);
         }
 
         #region View Events
@@ -311,7 +332,7 @@ namespace Alarmy.ViewModels
             this.view.SoundEnabled = this.SoundEnabled;
             this.view.SmartAlarm = this.SmartAlarmEnabled;
 
-            this.alarmService.Start();
+            this.Wakeup();
 
             if (this.settings.StartHidden)
             {
@@ -322,7 +343,7 @@ namespace Alarmy.ViewModels
         private void view_OnClosing(object sender, EventArgs e)
         {
             Logger.Info("Closing...");
-            this.alarmService.Stop();
+            this.Sleep();
         }
         #endregion
 
@@ -353,27 +374,6 @@ namespace Alarmy.ViewModels
         #endregion
 
         #region AlarmManager Events
-        private void alarmManager_OnSoundOn(object sender, EventArgs e)
-        {
-            if (!this.smartAlarmEnabled)
-                return; 
-
-            Logger.Info("Smart Alarm sent sound on");
-            if (this.view.SoundEnabled)
-                this.soundEnabled = true;
-
-            this.CheckForAlarms();
-        }
-
-        private void alarmManager_OnSoundOff(object sender, EventArgs e)
-        {
-            if (!this.smartAlarmEnabled)
-                return; 
-
-            Logger.Info("Smart Alarm sent sound off");
-            this.soundEnabled = false;
-            this.CheckForAlarms();
-        }
 
         private void alarmManager_OnWakeup(object sender, EventArgs e)
         {
@@ -390,7 +390,8 @@ namespace Alarmy.ViewModels
                 return; 
 
             Logger.Info("Smart Alarm sent sleep");
-            this.alarmService.Stop();
+            this.Sleep();
+            
         }
         #endregion
     }

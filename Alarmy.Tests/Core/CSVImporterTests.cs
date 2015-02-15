@@ -3,6 +3,7 @@ using Alarmy.Core;
 using Alarmy.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Alarmy.Tests.Core
@@ -22,8 +23,9 @@ namespace Alarmy.Tests.Core
                 DeleteExisting = true
             });
 
-            var result = service.List();
-            Assert.AreEqual(21, result.Count());
+            IList<IAlarm> alarms = null;
+            service.WhenForAnyArgs(x => x.Import(null, false)).Do(x => alarms = (IList<IAlarm>)x.Args()[0]);
+            Assert.AreEqual(21, alarms.Count);
         }
     }
 }

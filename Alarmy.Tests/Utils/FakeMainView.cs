@@ -80,5 +80,7 @@ namespace Alarmy.Tests.Utils
         public abstract void RemoveAlarm(IAlarm alarm);
 
         public abstract void UpdateAlarm(IAlarm alarm);
+
+        public abstract void ShowReminder(string caption, string message);
     }
 }

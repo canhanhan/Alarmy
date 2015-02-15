@@ -185,6 +185,11 @@ namespace Alarmy.Views
             }
         }
 
+        public void ShowReminder(string caption, string message)
+        {
+            MessageBox.Show(message, caption, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
         public void UpdateAlarm(IAlarm alarm)
         {
             this.InvokeIfNecessary(() =>

@@ -1,38 +1,42 @@
 ﻿using Alarmy.Common;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Alarmy.Tests
 {
     internal abstract class InMemoryAlarmRepository : IAlarmRepository, ISupportsStartStop
     {
-        private readonly Dictionary<Guid, IAlarm> alarms;
-
-        public bool IsDirty { get { return true; } }
+        public Dictionary<Guid, IAlarm> Alarms;
 
         public InMemoryAlarmRepository()
         {
-            alarms = new Dictionary<Guid, IAlarm>();            
+            this.Alarms = new Dictionary<Guid, IAlarm>();            
         }
 
-        public IEnumerable<IAlarm> List()
+        public IEnumerable<IAlarm> Load()
         {
-            return alarms.Values;
+            return this.Alarms.Values;
         }
 
         public void Add(IAlarm alarm)
         {
-            alarms[alarm.Id] = alarm;
-        }
-
-        public void Remove(IAlarm alarm)
-        {
-            alarms.Remove(alarm.Id);
+            this.Alarms.Add(alarm.Id, alarm);
         }
 
         public void Update(IAlarm alarm)
         {
-            Add(alarm);
+            this.Alarms[alarm.Id] = alarm;
+        }
+
+        public void Remove(IAlarm alarm)
+        {
+            this.Alarms.Remove(alarm.Id);
+        }
+
+        public void Save(IEnumerable<IAlarm> alarms)
+        {
+            this.Alarms = alarms.ToDictionary(x => x.Id);
         }
 
         public abstract void Start();

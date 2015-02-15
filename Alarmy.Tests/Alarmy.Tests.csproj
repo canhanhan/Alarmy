@@ -85,7 +85,8 @@
     <Compile Include="Common\AlarmTests.cs" />
     <Compile Include="Core\FileAlarmRepository\FileAlarmRepositoryTests.cs" />
     <Compile Include="Core\CSVImporterTests.cs" />
-    <Compile Include="Infrastructure\ExtensionsTests.cs" />
+    <Compile Include="Core\MissedAlarmReminderManagerTests.cs" />
+    <Compile Include="Utils\Infrastructure\ExtensionsTests.cs" />
     <Compile Include="Utils\FakeAlarmService.cs" />
     <Compile Include="Utils\FakeMainView.cs" />
     <Compile Include="Utils\InMemoryAlarmRepository.cs" />

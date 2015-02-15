@@ -7,30 +7,33 @@ namespace Alarmy.Core
 {
     internal class AlarmService : IAlarmService, IDisposable
     {
+        private readonly IEqualityComparer<IAlarm> valueComparer;
         private readonly ITimer timer;
         private readonly IAlarmRepository repository;
         private readonly bool isStoppableRepository;
         private readonly IDictionary<Guid, IAlarm> cache;
+
+        private bool pauseRepositoryUpdates;
 
         public event EventHandler<AlarmEventArgs> OnAlarmAdd;
         public event EventHandler<AlarmEventArgs> OnAlarmRemoval;
         public event EventHandler<AlarmEventArgs> OnAlarmUpdate;
         public event EventHandler<AlarmEventArgs> OnAlarmStatusChange;
       
-        public AlarmService(IAlarmRepository repository, ITimer timer, int checkInterval)
+        public AlarmService(IAlarmRepository repository, ITimer checkTimer)
         {
             if (repository == null)
                 throw new ArgumentNullException("repository");
 
-            if (timer == null)
-                throw new ArgumentNullException("timer");
+            if (checkTimer == null)
+                throw new ArgumentNullException("checkTimer");
 
+            this.cache = new Dictionary<Guid, IAlarm>();
+            this.valueComparer = new AlarmEqualityComparer();
             this.repository = repository;
             this.isStoppableRepository = typeof(ISupportsStartStop).IsAssignableFrom(repository.GetType());
-            this.cache = new Dictionary<Guid, IAlarm>();
-            this.timer = timer;
+            this.timer = checkTimer;
             this.timer.Elapsed += timer_Elapsed;
-            this.timer.Interval = TimeSpan.FromSeconds(checkInterval).TotalMilliseconds;
         }
 
         public void Start()
@@ -42,6 +45,7 @@ namespace Alarmy.Core
 
             this.RefreshRepository();
         }
+
         public void Stop()
         {
             this.timer.Stop();
@@ -58,7 +62,7 @@ namespace Alarmy.Core
             lock (this.cache)
             {
                 this.cache.Add(alarm.Id, alarm);
-                this.repository.Add(alarm);
+                this.UpdateRepository();
 
                 if (this.OnAlarmAdd != null)
                     this.OnAlarmAdd.Invoke(this, new AlarmEventArgs(alarm));
@@ -75,7 +79,7 @@ namespace Alarmy.Core
             lock (this.cache)
             {
                 this.cache.Remove(alarm.Id);
-                this.repository.Remove(alarm);
+                this.UpdateRepository();
 
                 if (this.OnAlarmRemoval != null)
                     this.OnAlarmRemoval.Invoke(this, new AlarmEventArgs(alarm));
@@ -90,7 +94,7 @@ namespace Alarmy.Core
             lock (this.cache)
             {
                 this.cache[alarm.Id] = alarm;
-                this.repository.Update(alarm);
+                this.UpdateRepository();
 
                 if (this.OnAlarmUpdate != null)
                     this.OnAlarmUpdate.Invoke(this, new AlarmEventArgs(alarm));
@@ -107,7 +111,9 @@ namespace Alarmy.Core
         public void Import(IEnumerable<IAlarm> alarms, bool deleteExisting)
         {
             lock (this.cache)
+            try
             {
+                this.pauseRepositoryUpdates = true;
                 if (deleteExisting)
                 {
                     foreach (var alarm in this.cache.Values.ToArray())
@@ -120,6 +126,11 @@ namespace Alarmy.Core
                 {
                     this.Add(alarm);
                 }
+            } 
+            finally
+            {
+                this.pauseRepositoryUpdates = false;
+                this.UpdateRepository();
             }
         }
         public void Dispose()
@@ -132,26 +143,23 @@ namespace Alarmy.Core
         {
             lock (this.cache)
             {
-                if (this.repository.IsDirty)
+                if (!this.RefreshRepository())
+                foreach (var alarm in this.cache.Values)
                 {
-                    this.RefreshRepository();
-                }
-                else
-                {
-                    foreach (var alarm in this.cache.Values)
-                    {
-                        this.CheckAlarmStatus(alarm);
-                    }
+                    this.CheckAlarmStatus(alarm);
                 }
             }
         }
 
-        private void RefreshRepository()
+        private bool RefreshRepository()
         {
             lock (this.cache)
-            {
-                var alarms = this.repository.List().ToDictionary(x => x.Id);
+            {                
+                var alarmList = this.repository.Load();
+                if (alarmList == null)
+                    return false;
 
+                var alarms = alarmList.ToDictionary(x => x.Id);
                 var deletedAlarmKeys = this.cache.Keys.Where(x => !alarms.ContainsKey(x)).ToArray();
                 foreach (var key in deletedAlarmKeys)
                 {
@@ -166,10 +174,13 @@ namespace Alarmy.Core
                     IAlarm cachedAlarm = null;
                     if (this.cache.TryGetValue(alarm.Id, out cachedAlarm))
                     {
-                        cachedAlarm.Import(alarm);
+                        if (!this.valueComparer.Equals(cachedAlarm, alarm))
+                        {
+                            cachedAlarm.Import(alarm);
 
-                        if (this.OnAlarmUpdate != null)
-                            this.OnAlarmUpdate.Invoke(this, new AlarmEventArgs(cachedAlarm));
+                            if (this.OnAlarmUpdate != null)
+                                this.OnAlarmUpdate.Invoke(this, new AlarmEventArgs(cachedAlarm));
+                        }
                     }
                     else
                     {
@@ -181,7 +192,17 @@ namespace Alarmy.Core
 
                     this.CheckAlarmStatus(cachedAlarm);
                 }
+
+                return true;
             }
+        }
+
+        private void UpdateRepository()
+        {
+            if (this.pauseRepositoryUpdates)
+                return;
+
+            this.repository.Save(this.cache.Values);
         }
 
         private void CheckAlarmStatus(IAlarm cachedAlarm)

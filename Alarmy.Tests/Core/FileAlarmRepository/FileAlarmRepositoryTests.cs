@@ -19,8 +19,8 @@ namespace Alarmy.Tests.Core
         private ISharedFileFactory sharedFileFactory;
         private ISharedFile sharedFile;
         private IRepositorySerializer serializer;
-        private IDictionary<Guid, IAlarm> storage;
-        private IDictionary<Guid, IAlarm> serializeArgs;
+        private IList<IAlarm> storage;
+        private IEnumerable<IAlarm> serializeArgs;
 
         private IAlarmRepository CreateBlankRepository(params IRepositoryFilter[] filters)
         {
@@ -33,12 +33,12 @@ namespace Alarmy.Tests.Core
         [TestInitialize]
         public void Setup()
         {
-            this.storage = new Dictionary<Guid, IAlarm>();
+            this.storage = new List<IAlarm>();
 
             this.serializeArgs = null;
             this.serializer = Substitute.For<IRepositorySerializer>();
             this.serializer.Deserialize(null).ReturnsForAnyArgs(this.storage);
-            this.serializer.WhenForAnyArgs(x => x.Serialize(null, null)).Do(x => this.serializeArgs = (IDictionary<Guid, IAlarm>)x.Args()[0]);
+            this.serializer.WhenForAnyArgs(x => x.Serialize(null, null)).Do(x => this.serializeArgs = (IEnumerable<IAlarm>)x.Args()[0]);
 
             this.stream = new MemoryStream();
             this.watcher = Substitute.For<IFileWatcher>();
@@ -50,10 +50,12 @@ namespace Alarmy.Tests.Core
         }
 
         [TestMethod]
-        public void FileAlarmRepository_Start_ReadsAlarmsFromDisk()
+        public void FileAlarmRepository_Load_ReadsAlarmsFromDisk()
         {
-            var alarm = new FakeAlarm();
+            var alarm = FakeAlarm.GetAlarm();
             var repository = this.CreateBlankRepository();
+
+            repository.Load();
 
             this.sharedFileFactory.ReceivedWithAnyArgs().Read(null);
         }
@@ -61,82 +63,36 @@ namespace Alarmy.Tests.Core
         [TestMethod]
         public void FileAlarmRepository_Add_AddsItems()
         {
-            var alarm = new FakeAlarm();
+            var alarm = FakeAlarm.GetAlarm();
             var repository = this.CreateBlankRepository();
            
-            repository.Add(alarm);
+            repository.Save(new [] { alarm });
 
-            Assert.AreSame(alarm, this.serializeArgs.Values.First());
+            Assert.AreSame(alarm, this.serializeArgs.First());
         }
 
         [TestMethod]
         public void FileAlarmRepository_Add_AddsMultipleItems()
         {            
-            var alarm1= new FakeAlarm();
-            var alarm2 = new FakeAlarm();
+            var alarm1= FakeAlarm.GetAlarm();
+            var alarm2 = FakeAlarm.GetAlarm();
 
             var repository = this.CreateBlankRepository();
 
-            repository.Add(alarm1);
-            repository.Add(alarm2);
+            repository.Save(new [] { alarm1, alarm2 });
 
-            Assert.AreSame(alarm1, this.serializeArgs.Values.First());
-            Assert.AreSame(alarm2, this.serializeArgs.Values.Skip(1).First());
+            Assert.AreSame(alarm1, this.serializeArgs.First());
+            Assert.AreSame(alarm2, this.serializeArgs.Skip(1).First());
         }
-
-        [TestMethod]
-        public void FileAlarmRepository_Add_DoesNotOverwriteExistingAlarms()
-        {
-            var alarm1 = new FakeAlarm();
-            var alarm2 = new FakeAlarm();
-            this.storage.Add(alarm1.Id, alarm1);
-
-            var repository = this.CreateBlankRepository();
-
-            repository.Add(alarm2);
-
-            Assert.AreSame(alarm1, this.serializeArgs.Values.First());
-            Assert.AreSame(alarm2, this.serializeArgs.Values.Skip(1).First());
-        }
-
-        [TestMethod]
-        public void FileAlarmRepository_Add_OverwritesExistingAlarmsWithSameGuid()
-        {
-            var alarm1 = new FakeAlarm();
-            var alarm2 = new FakeAlarm();
-            alarm2.Id = alarm1.Id;
-            this.storage.Add(alarm1.Id, alarm1);
-
-            var repository = this.CreateBlankRepository();
-
-            repository.Add(alarm2);
-
-            Assert.AreEqual(1, this.serializeArgs.Values.Count);
-            Assert.AreSame(alarm2, this.serializeArgs.Values.First());
-        }
-
-        [TestMethod]
-        public void FileAlarmRepository_Update_ChangesItems()
-        {
-            var existingAlarm = new FakeAlarm { Title = "Before" };
-            var duplicateAlarm = new FakeAlarm { Title = "After", Id = existingAlarm.Id };
-            this.storage.Add(existingAlarm.Id, existingAlarm);
-            var repository = this.CreateBlankRepository();
-
-            repository.Update(duplicateAlarm);
-
-            Assert.AreSame(duplicateAlarm, this.serializeArgs.Values.First());
-        }
-
 
         [TestMethod]
         public void FileAlarmRepository_List_ReturnsAlarms()
         {
-            var alarm1 = new FakeAlarm();
-            this.storage.Add(alarm1.Id, alarm1);
+            var alarm1 = FakeAlarm.GetAlarm();
+            this.storage.Add(alarm1);
             var repository = this.CreateBlankRepository();
 
-            var result = repository.List();
+            var result = repository.Load();
 
             Assert.AreEqual(1, result.Count());
             Assert.AreSame(alarm1, result.First());
@@ -145,35 +101,20 @@ namespace Alarmy.Tests.Core
         [TestMethod]
         public void FileAlarmRepository_List_DoesNotReturnFilteredOutAlarms()
         {
-            var alarm1 = new FakeAlarm();
-            var alarm2 = new FakeAlarm();
+            var alarm1 = FakeAlarm.GetAlarm();
+            var alarm2 = FakeAlarm.GetAlarm();
             var filter = Substitute.For<IRepositoryFilter>();
             filter.Match(alarm1).Returns(true);
             filter.Match(alarm2).Returns(false);
-            this.storage.Add(alarm1.Id, alarm1);
-            this.storage.Add(alarm2.Id, alarm2);
+            this.storage.Add(alarm1);
+            this.storage.Add(alarm2);
 
             var repository = this.CreateBlankRepository(filter);
 
-            var result = repository.List();
+            var result = repository.Load();
 
             Assert.AreEqual(1, result.Count());
             Assert.AreSame(alarm1, result.First());
-        }
-
-        [TestMethod]
-        public void FileAlarmRepository_Remove_DeletesItems()
-        {
-            var alarm1 = new FakeAlarm();
-            var alarm2 = new FakeAlarm();
-            this.storage.Add(alarm1.Id, alarm1);
-            this.storage.Add(alarm2.Id, alarm2);
-            var repository = this.CreateBlankRepository();
-
-            repository.Remove(alarm2);
-
-            Assert.AreEqual(1, this.serializeArgs.Values.Count);
-            Assert.AreSame(alarm1, this.serializeArgs.Values.First());
         }
     }
 }

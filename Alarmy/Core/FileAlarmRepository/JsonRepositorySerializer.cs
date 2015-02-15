@@ -1,6 +1,5 @@
 ﻿using Alarmy.Common;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -13,19 +12,19 @@ namespace Alarmy.Core.FileAlarmRepository
         public JsonRepositorySerializer()
         {
             this.serializer = JsonSerializer.Create();
-            this.serializer.TypeNameHandling = TypeNameHandling.All;
+            this.serializer.TypeNameHandling = TypeNameHandling.Objects;
         }
 
-        public IDictionary<Guid, IAlarm> Deserialize(Stream stream)
+        public IEnumerable<IAlarm> Deserialize(Stream stream)
         {
             using (var reader = new JsonTextReader(new StreamReader(stream)))
             {
                 reader.CloseInput = false;
-                return serializer.Deserialize<Dictionary<Guid, IAlarm>>(reader);
+                return serializer.Deserialize<IEnumerable<IAlarm>>(reader);
             }
         }
 
-        public void Serialize(IDictionary<Guid, IAlarm> alarms, Stream stream)
+        public void Serialize(IEnumerable<IAlarm> alarms, Stream stream)
         {
             var streamWriter = new StreamWriter(stream);
             using (var writer = new JsonTextWriter(streamWriter))

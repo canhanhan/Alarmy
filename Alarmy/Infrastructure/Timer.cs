@@ -6,70 +6,66 @@ namespace Alarmy.Infrastructure
     internal class Timer : ITimer, IDisposable
     {
         public event EventHandler Elapsed;
-        private readonly System.Timers.Timer _Timer;
+        private readonly System.Timers.Timer timer;
 
         public double Interval
         {
             get
             {
-                return _Timer.Interval;
-            }
-            set
-            {
-                _Timer.Interval = value;
+                return timer.Interval;
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        public Timer()
+        public Timer(int interval)
         {
-            _Timer = new System.Timers.Timer() { AutoReset = true };
-            _Timer.Elapsed += _Timer_Elapsed;
+            this.timer = new System.Timers.Timer() { AutoReset = true };
+            this.timer.Elapsed += this.Timer_Elapsed;
+            this.timer.Interval = TimeSpan.FromSeconds(interval).TotalMilliseconds;
         }
 
         public void Start()
         {
-            _Timer.Start();
+            this.timer.Start();
         }
 
         public void Stop()
         {
-            _Timer.Stop();
+            this.timer.Stop();
         }
 
         public void Reset()
         {
-            _Timer.Stop();
-            _Timer.Start();
+            this.timer.Stop();
+            this.timer.Start();
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
         ~Timer()
         {
-            Dispose(false);
+            this.Dispose(false);
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                if (_Timer != null)
+                if (this.timer != null)
                 {
-                    _Timer.Dispose();
+                    this.timer.Dispose();
                 }
             }
         }
 
-        private void _Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if (Elapsed != null)
+            if (this.Elapsed != null)
             {
-                Elapsed.Invoke(this, null);
+                this.Elapsed.Invoke(this, null);
             }
         }
     }

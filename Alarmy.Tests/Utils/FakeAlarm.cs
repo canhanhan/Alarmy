@@ -1,10 +1,19 @@
 ﻿using Alarmy.Common;
+using NSubstitute;
 using System;
 
 namespace Alarmy.Tests.Utils
 {
-    internal class FakeAlarm : IAlarm
+    internal abstract class FakeAlarm : IAlarm
     {
+        public static FakeAlarm GetAlarm(AlarmStatus status = default(AlarmStatus), Guid id = default(Guid))
+        {
+            var alarm = Substitute.For<FakeAlarm>();
+            alarm.Id = id == default(Guid) ? Guid.NewGuid() : id;
+            alarm.Status = status;
+            return alarm;
+        }
+
         public Guid Id { get; set; }
         public string Title { get; set; }
         public AlarmStatus Status { get; set; }
@@ -26,8 +35,7 @@ namespace Alarmy.Tests.Utils
         public void SetTime(DateTime time) { }
         public void Cancel() { }
         public void Complete() { }
-        public bool CheckStatusChange() { return true; }
-        public bool Equals(IAlarm alarm, bool compareOnlyMetadata) { return true; }
+        public abstract bool CheckStatusChange();
         public void Import(IAlarm alarm) { }
     }
 }

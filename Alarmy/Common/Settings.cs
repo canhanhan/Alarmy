@@ -15,6 +15,9 @@ namespace Alarmy.Common
         public int AlarmListGroupInterval { get; protected set; }
         public string AlarmDatabasePath { get; protected set; }
         public int FreshnessInMinutes { get; protected set; }
+        public bool RemindAllAlarms { get; protected set; }
+        public int ReminderInterval { get; protected set; }
+        public int RepositoryInterval { get; protected set; }
 
         public Settings()
         {
@@ -27,12 +30,15 @@ namespace Alarmy.Common
             this.AlarmListGroupInterval = 15;
             this.AlarmDatabasePath = Environment.ExpandEnvironmentVariables("%TEMP%\\alarms.db");
             this.FreshnessInMinutes = 120;
+            this.RemindAllAlarms = false;
+            this.ReminderInterval = 300;
+            this.RepositoryInterval = 60;
         }
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "alarmSoundFile={0};checkInterval={1};enableSound={2};popupOnAlarm={3};smartAlarm={4};alarmListGroupInterval={5};alarmDatabasePath={6};freshnessInMinutes={7}",
-                this.AlarmSoundFile, this.CheckInterval, this.EnableSound, this.PopupOnAlarm, this.SmartAlarm, this.AlarmListGroupInterval, this.AlarmDatabasePath, this.FreshnessInMinutes);
+            return string.Format(CultureInfo.InvariantCulture, "alarmSoundFile={0};checkInterval={1};enableSound={2};popupOnAlarm={3};smartAlarm={4};alarmListGroupInterval={5};alarmDatabasePath={6};freshnessInMinutes={7},reminderInterval={8},remindAllAlarms={9}",
+                this.AlarmSoundFile, this.CheckInterval, this.EnableSound, this.PopupOnAlarm, this.SmartAlarm, this.AlarmListGroupInterval, this.AlarmDatabasePath, this.FreshnessInMinutes, this.ReminderInterval, this.RemindAllAlarms);
         }        
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Alarmy.Common;
 using Alarmy.Core;
+using Alarmy.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using System;
@@ -11,15 +12,15 @@ namespace Alarmy.Tests
     [TestClass]
     public class AlarmServiceTests
     {
-        private IAlarmRepository repository;
+        private InMemoryAlarmRepository repository;
         private ITimer timer;
         private AlarmService service;
 
-        private static IAlarm GetAlarm(AlarmStatus status = default(AlarmStatus))
+        private static FakeAlarm GetAlarm(AlarmStatus status = default(AlarmStatus), Guid id = default(Guid))
         {
-            var alarm = Substitute.For<IAlarm>();
-            alarm.Id = Guid.NewGuid();
-            alarm.Status.Returns(status);
+            var alarm = Substitute.For<FakeAlarm>();
+            alarm.Id = id == default(Guid) ? Guid.NewGuid() : id;
+            alarm.Status = status;
             return alarm;
         }
 
@@ -33,7 +34,7 @@ namespace Alarmy.Tests
         {
             this.repository = Substitute.For<InMemoryAlarmRepository>();
             this.timer = Substitute.For<ITimer>();
-            this.service = new AlarmService(this.repository, timer, 0);
+            this.service = new AlarmService(this.repository, timer);
             this.service.Start();
         }
 
@@ -71,7 +72,7 @@ namespace Alarmy.Tests
 
             this.service.Add(alarm);
 
-            Assert.AreSame(alarm, this.repository.List().First());
+            Assert.AreSame(alarm, this.repository.Load().First());
         }
 
         [TestMethod]
@@ -112,8 +113,8 @@ namespace Alarmy.Tests
 
             this.service.Remove(alarm2);
             
-            Assert.AreSame(alarm1, this.repository.List().First());
-            Assert.AreEqual(1, this.repository.List().Count());
+            Assert.AreSame(alarm1, this.repository.Load().First());
+            Assert.AreEqual(1, this.repository.Load().Count());
         }
 
         [TestMethod]
@@ -145,8 +146,8 @@ namespace Alarmy.Tests
 
             this.service.Update(alarm1);
 
-            Assert.AreSame(alarm1, this.repository.List().First());
-            Assert.AreEqual("New Title", this.repository.List().First().Title);
+            Assert.AreSame(alarm1, this.repository.Load().First());
+            Assert.AreEqual("New Title", this.repository.Load().First().Title);
         }
 
         [TestMethod]
@@ -206,7 +207,8 @@ namespace Alarmy.Tests
         {
             var alarm = GetAlarm();
             this.service.Add(alarm);
-            alarm.Title = "New Title";
+            var newAlarm = GetAlarm(id: alarm.Id);
+            newAlarm.Title = "New Title";
             var triggerCount = 0;
             AlarmEventArgs args = null;
             this.service.OnAlarmUpdate += (_, e) =>
@@ -215,7 +217,7 @@ namespace Alarmy.Tests
                 args = e;
             };
 
-            this.repository.Update(alarm);
+            this.repository.Update(newAlarm);
             this.TickTimer();
             
             Assert.AreEqual(1, triggerCount);
@@ -227,7 +229,7 @@ namespace Alarmy.Tests
         {
             var alarm = GetAlarm(AlarmStatus.Ringing);
             this.service.Add(alarm);
-            alarm.Status.Returns(AlarmStatus.Completed);
+            var newAlarm = GetAlarm(AlarmStatus.Completed, alarm.Id);
             var triggerCount = 0;
             AlarmEventArgs args = null;
             this.service.OnAlarmUpdate += (_, e) =>
@@ -236,7 +238,7 @@ namespace Alarmy.Tests
                 args = e;
             };
 
-            this.repository.Update(alarm);
+            this.repository.Update(newAlarm);
             this.TickTimer();
 
             Assert.AreEqual(1, triggerCount);
@@ -286,8 +288,9 @@ namespace Alarmy.Tests
         [TestMethod]
         public void AlarmService_Timer_TriggersOnlyOneEvent_WhenAlarmStatusChangedInRepository()
         {
-            var alarm = GetAlarm();
+            var alarm = GetAlarm(AlarmStatus.Ringing);
             this.service.Add(alarm);
+            var newAlarm = GetAlarm(AlarmStatus.Completed, id: alarm.Id);
             var alarmAdded = false;
             var alarmUpdated = false;
             var alarmRemoved = false;
@@ -298,14 +301,13 @@ namespace Alarmy.Tests
             this.service.OnAlarmRemoval += (_, e) => alarmRemoved = true;
             this.service.OnAlarmStatusChange += (_, e) => alarmStatusChanged = true;
 
-            alarm.CheckStatusChange().Returns(true);
-            this.repository.Update(alarm);
+            this.repository.Update(newAlarm);
             this.TickTimer();
 
-            Assert.IsFalse(alarmAdded);
-            Assert.IsTrue(alarmUpdated);
-            Assert.IsFalse(alarmRemoved);
-            Assert.IsTrue(alarmStatusChanged);
+            Assert.IsFalse(alarmAdded, "OnAlarmAdd was called");
+            Assert.IsTrue(alarmUpdated, "OnAlarmUpdate was not called");
+            Assert.IsFalse(alarmRemoved, "OnAlarmRemoval was called");
+            Assert.IsFalse(alarmStatusChanged, "OnAlarmStatusChange was called");
         }
 
         [TestMethod]
@@ -325,10 +327,10 @@ namespace Alarmy.Tests
             this.repository.Add(alarm);
             this.TickTimer();
 
-            Assert.IsTrue(alarmAdded);
-            Assert.IsFalse(alarmUpdated);
-            Assert.IsFalse(alarmRemoved);
-            Assert.IsFalse(alarmStatusChanged);
+            Assert.IsTrue(alarmAdded, "OnAlarmAdd was not called");
+            Assert.IsFalse(alarmUpdated, "OnAlarmUpdate was called");
+            Assert.IsFalse(alarmRemoved, "OnAlarmRemove was called");
+            Assert.IsFalse(alarmStatusChanged, "OnAlarmStatusChange was called");
         }
 
         [TestMethod]
@@ -349,10 +351,10 @@ namespace Alarmy.Tests
             this.repository.Remove(alarm);
             this.TickTimer();
 
-            Assert.IsFalse(alarmAdded);
-            Assert.IsFalse(alarmUpdated);
-            Assert.IsTrue(alarmRemoved);
-            Assert.IsFalse(alarmStatusChanged);
+            Assert.IsFalse(alarmAdded, "OnAlarmAdd was called");
+            Assert.IsFalse(alarmUpdated, "OnAlarmUpdate was called");
+            Assert.IsTrue(alarmRemoved, "OnAlarmRemoval was not called");
+            Assert.IsFalse(alarmStatusChanged, "OnAlarmStatusChange was called");
         }
 
         [TestMethod]
@@ -360,6 +362,9 @@ namespace Alarmy.Tests
         {
             var alarm = GetAlarm();
             this.service.Add(alarm);
+            var newAlarm = GetAlarm(id: alarm.Id);
+            newAlarm.Title = "Test";
+
             var alarmAdded = false;
             var alarmUpdated = false;
             var alarmRemoved = false;
@@ -370,12 +375,14 @@ namespace Alarmy.Tests
             this.service.OnAlarmRemoval += (_, e) => alarmRemoved = true;
             this.service.OnAlarmStatusChange += (_, e) => alarmStatusChanged = true;
 
+            this.repository.Update(newAlarm);
             this.TickTimer();
 
-            Assert.IsFalse(alarmAdded);
-            Assert.IsTrue(alarmUpdated);
-            Assert.IsFalse(alarmRemoved);
-            Assert.IsFalse(alarmStatusChanged);
+            Assert.IsFalse(alarmAdded, "OnAlarmAdd was called");
+            Assert.IsTrue(alarmUpdated, "OnAlarmUpdate was not called");
+            Assert.IsFalse(alarmRemoved, "OnAlarmRemove was called");
+            Assert.IsFalse(alarmStatusChanged, "OnAlarmStatusChange was called");
+
         }
     }
 }

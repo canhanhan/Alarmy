@@ -38,10 +38,6 @@ namespace Alarmy.Views
             [DllImport("SHELL32", CallingConvention = CallingConvention.StdCall, PreserveSig = false)]
             public static extern void SHAppBarMessage(int dwMessage, ref APPBARDATA pData);
 
-            [DllImport("User32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool MoveWindow(IntPtr hWnd, int x, int y, int cx, int cy, [MarshalAs(UnmanagedType.Bool)]bool repaint);
-
             private NativeMethods() { }
         }
 
