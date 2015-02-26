@@ -62,11 +62,13 @@
             // 
             // timeAlarmTitle
             // 
+            this.timeAlarmTitle.BackColor = System.Drawing.SystemColors.Window;
             this.timeAlarmTitle.Dock = System.Windows.Forms.DockStyle.Fill;
             this.timeAlarmTitle.Location = new System.Drawing.Point(53, 3);
             this.timeAlarmTitle.Name = "timeAlarmTitle";
             this.timeAlarmTitle.Size = new System.Drawing.Size(304, 20);
             this.timeAlarmTitle.TabIndex = 0;
+            this.timeAlarmTitle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.timeAlarmTitle_KeyUp);
             // 
             // timeAlarmTime
             // 

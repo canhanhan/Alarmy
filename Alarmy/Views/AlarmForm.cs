@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Alarmy.Views
@@ -21,9 +22,34 @@ namespace Alarmy.Views
         }
 
         private void addTimeAlarm_Click(object sender, EventArgs e)
-        {
+        {            
+            if (!this.ValidateForm())
+            {
+                MessageBox.Show("Please enter the title", "Missing Title", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             this.DialogResult = DialogResult.OK;
             this.Close();
+        }
+
+        private bool ValidateForm()
+        {
+            if (string.IsNullOrWhiteSpace(this.timeAlarmTitle.Text))
+            {
+                this.timeAlarmTitle.BackColor = Color.Red;
+                return false;
+            }
+            else
+            {
+                this.timeAlarmTitle.BackColor = SystemColors.Window;
+                return true;
+            }
+        }
+
+        private void timeAlarmTitle_KeyUp(object sender, KeyEventArgs e)
+        {
+            this.ValidateForm();
         }
     }
 }
