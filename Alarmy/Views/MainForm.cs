@@ -298,16 +298,21 @@ namespace Alarmy.Views
             this.listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             this.listView1.EndUpdate();
 
-            var newWidth = this.listView1.Columns.Cast<ColumnHeader>().Sum(x => x.Width) +
+            this.ResizeForm();
+
+            this.ResumeLayout();
+        }
+
+        private void ResizeForm()
+        {
+            var newWidth = Math.Max(200, this.listView1.Columns.Cast<ColumnHeader>().Sum(x => x.Width) +
                             this.listView1.Padding.Horizontal +
                             this.listView1.Margin.Horizontal +
                             this.tableLayoutPanel1.Padding.Horizontal +
                             this.tableLayoutPanel1.Margin.Horizontal +
-                            this.Padding.Horizontal;
+                            this.Padding.Horizontal);
             if (newWidth != this.Width)
                 this.Reposition(newWidth);
-
-            this.ResumeLayout();
         }
 
         private void InvokeIfNecessary(Action action)
