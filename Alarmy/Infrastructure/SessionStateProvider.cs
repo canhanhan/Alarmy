@@ -160,7 +160,7 @@ namespace Alarmy.Infrastructure
             uint length;
             if (NativeMethods.WTSQuerySessionInformation(IntPtr.Zero, this.sessionId, NativeMethods.WTS_INFO_CLASS.WTSConnectState, out buffer, out length) && length > 0)
             {
-                var state = (NativeMethods.WTS_CONNECTSTATE_CLASS)Marshal.PtrToStructure(buffer, typeof(NativeMethods.WTS_CONNECTSTATE_CLASS));
+                var state = (NativeMethods.WTS_CONNECTSTATE_CLASS)Marshal.ReadIntPtr(buffer);             
                 NativeMethods.WTSFreeMemory(buffer);
 
                 return state == NativeMethods.WTS_CONNECTSTATE_CLASS.WTSActive;
