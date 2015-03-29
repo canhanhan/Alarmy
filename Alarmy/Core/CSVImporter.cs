@@ -91,8 +91,8 @@ namespace Alarmy.Core
             {
                 var map = new OperaWakeupReportMap(context.DateFormat, context.CaptionFormat, context.CaptionPatterns);
                 csvReader.Configuration.RegisterClassMap(map);
-                csvReader.Configuration.Delimiter = "\t";
-                csvReader.Configuration.HasHeaderRecord = true;
+                csvReader.Configuration.Delimiter = context.Delimiter;
+                csvReader.Configuration.HasHeaderRecord = context.HasHeaders;
 
                 this.alarmService.Import(csvReader.GetRecords<Alarm>().Cast<IAlarm>().Where(x => x.Time != DateTime.MinValue), context.DeleteExisting);
             }

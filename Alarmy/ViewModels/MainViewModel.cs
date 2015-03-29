@@ -250,6 +250,7 @@ namespace Alarmy.ViewModels
                 return;
             }
 
+            context.Delimiter = settings.ImportDelimiter;
             context.DateFormat = settings.ImportDateFormat;
             context.CaptionFormat = settings.ImportCaptionFormat;
             context.CaptionPatterns = settings.ImportCaptionPatterns;

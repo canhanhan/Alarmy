@@ -168,5 +168,23 @@ namespace Alarmy.Properties {
                 return ((int)(this["RepositoryInterval"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("\\t")]
+        public string ImportDelimiter {
+            get {
+                return ((string)(this["ImportDelimiter"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ImportHasHeaders {
+            get {
+                return ((bool)(this["ImportHasHeaders"]));
+            }
+        }
     }
 }

@@ -20,6 +20,8 @@ namespace Alarmy.Common
         public int ReminderInterval { get; protected set; }
         public int RepositoryInterval { get; protected set; }
         public string DatePickerFormat { get; protected set; }
+        public bool ImportHasHeaders { get; protected set; }
+        public string ImportDelimiter { get; protected set; }
         public string ImportDateFormat { get; protected set; }
         public string ImportCaptionFormat { get; protected set; }
         public string[] ImportCaptionPatterns { get; protected set; }
@@ -39,6 +41,8 @@ namespace Alarmy.Common
             this.ReminderInterval = Properties.Settings.Default.ReminderInterval;
             this.RepositoryInterval = Properties.Settings.Default.RepositoryInterval;
             this.DatePickerFormat = Properties.Settings.Default.DatePickerFormat;
+            this.ImportHasHeaders = Properties.Settings.Default.ImportHasHeaders; 
+            this.ImportDelimiter = Properties.Settings.Default.ImportDelimiter;
             this.ImportDateFormat = Properties.Settings.Default.ImportDateFormat;
             this.ImportCaptionFormat = Properties.Settings.Default.ImportCaptionFormat;
             this.ImportCaptionPatterns = Properties.Settings.Default.ImportCaptionPatterns.Cast<string>().ToArray();
