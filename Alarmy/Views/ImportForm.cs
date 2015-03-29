@@ -11,12 +11,6 @@ namespace Alarmy.Views
             set { this.pathTextBox.Text = value;  }
         }
 
-        public string DateFormat
-        {
-            get { return this.dateFormatTextBox.Text; }
-            set { this.dateFormatTextBox.Text = value; }
-        }
-
         public bool DeleteExistingAlarms
         {
             get { return this.deleteExistingCheckBox.Checked; }

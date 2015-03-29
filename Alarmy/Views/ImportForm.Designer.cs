@@ -32,8 +32,6 @@
             this.pathTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.browseButton = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.dateFormatTextBox = new System.Windows.Forms.TextBox();
             this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
             this.importButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
@@ -52,19 +50,16 @@
             this.tableLayoutPanel1.Controls.Add(this.pathTextBox, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.label1, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.browseButton, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label2, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.dateFormatTextBox, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.flowLayoutPanel2, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.deleteExistingCheckBox, 1, 2);
+            this.tableLayoutPanel1.Controls.Add(this.flowLayoutPanel2, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.deleteExistingCheckBox, 1, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 4;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
+            this.tableLayoutPanel1.RowCount = 3;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(384, 108);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(384, 84);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // pathTextBox
@@ -96,33 +91,13 @@
             this.browseButton.UseVisualStyleBackColor = true;
             this.browseButton.Click += new System.EventHandler(this.browseButton_Click);
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label2.Location = new System.Drawing.Point(3, 26);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(94, 26);
-            this.label2.TabIndex = 1;
-            this.label2.Text = "Date Format:";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // dateFormatTextBox
-            // 
-            this.dateFormatTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dateFormatTextBox.Location = new System.Drawing.Point(103, 29);
-            this.dateFormatTextBox.Name = "dateFormatTextBox";
-            this.dateFormatTextBox.Size = new System.Drawing.Size(244, 20);
-            this.dateFormatTextBox.TabIndex = 2;
-            this.dateFormatTextBox.Text = "dd\\.MM\\.yy hh\\:mm";
-            // 
             // flowLayoutPanel2
             // 
             this.flowLayoutPanel2.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.tableLayoutPanel1.SetColumnSpan(this.flowLayoutPanel2, 3);
             this.flowLayoutPanel2.Controls.Add(this.importButton);
             this.flowLayoutPanel2.Controls.Add(this.cancelButton);
-            this.flowLayoutPanel2.Location = new System.Drawing.Point(111, 78);
+            this.flowLayoutPanel2.Location = new System.Drawing.Point(111, 52);
             this.flowLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
             this.flowLayoutPanel2.Size = new System.Drawing.Size(162, 30);
@@ -153,7 +128,7 @@
             // 
             this.deleteExistingCheckBox.AutoSize = true;
             this.deleteExistingCheckBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.deleteExistingCheckBox.Location = new System.Drawing.Point(103, 55);
+            this.deleteExistingCheckBox.Location = new System.Drawing.Point(103, 29);
             this.deleteExistingCheckBox.Name = "deleteExistingCheckBox";
             this.deleteExistingCheckBox.Size = new System.Drawing.Size(244, 20);
             this.deleteExistingCheckBox.TabIndex = 3;
@@ -170,7 +145,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(384, 108);
+            this.ClientSize = new System.Drawing.Size(384, 84);
             this.Controls.Add(this.tableLayoutPanel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -190,8 +165,6 @@
         private System.Windows.Forms.TextBox pathTextBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button browseButton;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox dateFormatTextBox;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
         private System.Windows.Forms.Button importButton;
         private System.Windows.Forms.Button cancelButton;

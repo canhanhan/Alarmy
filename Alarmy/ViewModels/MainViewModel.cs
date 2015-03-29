@@ -250,6 +250,10 @@ namespace Alarmy.ViewModels
                 return;
             }
 
+            context.DateFormat = settings.ImportDateFormat;
+            context.CaptionFormat = settings.ImportCaptionFormat;
+            context.CaptionPatterns = settings.ImportCaptionPatterns;
+
             Logger.Info("Starting import");
             this.importer.Import(context);            
         }

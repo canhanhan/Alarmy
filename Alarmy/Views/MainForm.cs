@@ -147,7 +147,6 @@ namespace Alarmy.Views
                 {
                     return new ImportContext
                     {
-                        DateFormat = importForm.DateFormat,
                         Path = importForm.Path,
                         DeleteExisting = importForm.DeleteExistingAlarms
                     };
