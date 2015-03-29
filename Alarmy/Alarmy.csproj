@@ -143,6 +143,7 @@
   <ItemGroup>
     <Compile Include="Common\AlarmEqualityComparer.cs" />
     <Compile Include="Common\AlarmEventArgs.cs" />
+    <Compile Include="Common\AlarmMetadataEqualityComparer.cs" />
     <Compile Include="Common\AlarmReminderEventArgs.cs" />
     <Compile Include="Common\IImporter.cs" />
     <Compile Include="Common\ImportContext.cs" />

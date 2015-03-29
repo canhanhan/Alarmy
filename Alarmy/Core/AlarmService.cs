@@ -122,9 +122,12 @@ namespace Alarmy.Core
                     }
                 }
 
+                this.RefreshRepository();
+                var equityComparer = new AlarmMetadataEqualityComparer();
                 foreach(var alarm in alarms)
                 {
-                    this.Add(alarm);
+                    if (!this.cache.Values.Contains(alarm, equityComparer))
+                        this.Add(alarm);
                 }
             } 
             finally
