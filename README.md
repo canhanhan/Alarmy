@@ -47,47 +47,30 @@ To cancel an alarm, right click to the alarm and click to "Cancel".
 Cancelled alarms are indicated with "Gray" background color.
 
 ## Arguments
--a=*path*, --alarmSound=*path*
-Sets alarm sound wave file path (default: alarm.wav)
 
--c=*val*, --checkInterval=*val*
-Sets alarm check interval in seconds (default: 15). This value specifies how frequently alarms should be checked.
-
--m, --mute
-Mutes the application on start (default: false)
-
--np, --dontPopup 
-Alarm window does not popup when an alarm is ringing. (default: false)
-
--ns, --noSmartAlarm
-Disables Smart Alarm feature (default: false)
-
--h, --hidden
-Hides alarm window during startup. (default: false)
-
--g=*val*, --alarmListGroupInterval=*val*
-Sets groupping interval (in minutes) of alarm list. (default: 15)
-
--db=*path*, --database=*path*
-Sets path of the database file (default: %TEMP%\alarms.db"
-
--f=*val*, --freshness=*val*
-Sets max age of completed/cancelled alarms in minutes. These alarms will be purged from alarm database. (default: 120)
-
--ra, --remindAll
-When this option is used, application shows a reminder window for each completed alarm. (default: false)
-
--ri=*val*, --reminderInterval=*val*
-Sets interval (in seconds) of the reminders. (default: 300)
-
--rr=*val*, --repositoryInterval=*val*
-Specifies how frequently (in seconds) database file should queried of database refresh. (default: 60)
+| Argument | Description |
+| ------------- | ------------- |
+| -a=*path*, --alarmSound=*path* | Sets alarm sound wave file path (default: alarm.wav) |
+| -c=*val*, --checkInterval=*val* | Sets alarm check interval in seconds (default: 15). This value specifies how frequently alarms should be checked. |
+| -m, --mute | Mutes the application on start (default: false) |
+| -np, --dontPopup | Alarm window does not popup when an alarm is ringing. (default: false) |
+| -ns, --noSmartAlarm | Disables Smart Alarm feature (default: false) |
+| -h, --hidden | Hides alarm window during startup. (default: false) |
+| -g=*val*, --alarmListGroupInterval=*val* | Sets groupping interval (in minutes) of alarm list. (default: 15) |
+| -db=*path*, --database=*path* | Sets path of the database file (default: %TEMP%\alarms.db" |
+| -f=*val*, --freshness=*val* | Sets max age of completed/cancelled alarms in minutes. These alarms will be purged from alarm database. (default: 120) |
+| -ra, --remindAll | When this option is used, application shows a reminder window for each completed alarm. (default: false) |
+| -ri=*val*, --reminderInterval=*val* | Sets interval (in seconds) of the reminders. (default: 300) |
+| -rr=*val*, --repositoryInterval=*val* | Specifies how frequently (in seconds) database file should queried of database refresh. (default: 60) |
 
 ## Configuration Options
 Defaults of arguments described above can be modified from the configuration file (Alarmy.exe.config). There are few additional configuration options:
 
-DatePickerFormat: Date format for the date picker in alarm form
-ImportDateFormat: Date format of the dates of import source.
-ImportCaptionFormat: String format for the caption value.
-ImportCaptionPatterns: RegExp patterns for the caption values.
-ImportHasHeaders: Has import file headers?
+| Option  | Description |
+| ------------- | ------------- |
+| **DatePickerFormat**  | Date format for the date picker in alarm form  |
+| **ImportDateFormat**  | Date format of the dates of import source  |
+| **ImportCaptionFormat** | String format for the caption value |
+| **ImportCaptionPatterns** | RegExp patterns for the caption values |
+| **ImportHasHeaders** | Has import file headers? |
+
